@@ -382,59 +382,60 @@ abstract contract SafeStateInternal {
         if (errorAccumulator > 0) revert InvariantViolationTransientStorage(errorArray);
     }
 
-    modifier invariantTransientStorage(bytes32[] storage positions) {
+    modifier invariantTransientStorage(bytes32[] memory positions) {
         uint256[] memory beforeValueArray = _getTransientStorageArray(positions);
         _;
         uint256[] memory afterValueArray = _getTransientStorageArray(positions);
         _processExpectedInvariantTransientStorage(beforeValueArray, afterValueArray);
     }
 
-    modifier expectedInvariantTransientStorage(bytes32[] storage positions, uint256[] memory expectedInvariantArray) {
+    modifier expectedInvariantTransientStorage(bytes32[] memory positions, uint256[] memory expectedInvariantArray) {
         _;
         uint256[] memory actualStorageArray = _getTransientStorageArray(positions);
         _processExpectedInvariantTransientStorage(expectedInvariantArray, actualStorageArray);
     }
     
-    modifier exactIncreaseTransientStorage(bytes32[] storage positions, uint256[] memory exactIncreaseArray) {
+    modifier exactIncreaseTransientStorage(bytes32[] memory positions, uint256[] memory exactIncreaseArray) {
         uint256[] memory beforeValueArray = _getTransientStorageArray(positions);
         _;
         uint256[] memory afterValueArray = _getTransientStorageArray(positions);
         _processExactIncreaseTransientStorage(beforeValueArray, afterValueArray, exactIncreaseArray);
     }
 
-    modifier exactDecreaseTransientStorage(bytes32[] storage positions, uint256[] memory exactDecreaseArray) {
+    modifier exactDecreaseTransientStorage(bytes32[] memory positions, uint256[] memory exactDecreaseArray) {
         uint256[] memory beforeValueArray = _getTransientStorageArray(positions);
         _;
         uint256[] memory afterValueArray = _getTransientStorageArray(positions);
         _processExactDecreaseTransientStorage(beforeValueArray, afterValueArray, exactDecreaseArray);
     }
     
-    modifier maxIncreaseTransientStorage(bytes32[] storage positions, uint256[] memory maxIncreaseArray) {
+    modifier maxIncreaseTransientStorage(bytes32[] memory positions, uint256[] memory maxIncreaseArray) {
         uint256[] memory beforeValueArray = _getTransientStorageArray(positions);
         _;
         uint256[] memory afterValueArray = _getTransientStorageArray(positions);
         _processMaxIncreaseTransientStorage(beforeValueArray, afterValueArray, maxIncreaseArray);
     }
     
-    modifier minIncreaseTransientStorage(bytes32[] storage positions, uint256[] memory minIncreaseArray) {
+    modifier minIncreaseTransientStorage(bytes32[] memory positions, uint256[] memory minIncreaseArray) {
         uint256[] memory beforeValueArray = _getTransientStorageArray(positions);
         _;
         uint256[] memory afterValueArray = _getTransientStorageArray(positions);
         _processMinIncreaseTransientStorage(beforeValueArray, afterValueArray, minIncreaseArray);
     }
     
-    modifier maxDecreaseTransientStorage(bytes32[] storage positions, uint256[] memory maxDecreaseArray) {
+    modifier maxDecreaseTransientStorage(bytes32[] memory positions, uint256[] memory maxDecreaseArray) {
         uint256[] memory beforeValueArray = _getTransientStorageArray(positions);
         _;
         uint256[] memory afterValueArray = _getTransientStorageArray(positions);
         _processMaxDecreaseTransientStorage(beforeValueArray, afterValueArray, maxDecreaseArray);
     }
     
-    modifier minDecreaseTransientStorage(bytes32[] storage positions, uint256[] memory minDecreaseArray) {
+    modifier minDecreaseTransientStorage(bytes32[] memory positions, uint256[] memory minDecreaseArray) {
         uint256[] memory beforeValueArray = _getTransientStorageArray(positions);
         _;
         uint256[] memory afterValueArray = _getTransientStorageArray(positions);
         _processMinDecreaseTransientStorage(beforeValueArray, afterValueArray, minDecreaseArray);
     }  
 }
+
 
