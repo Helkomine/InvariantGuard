@@ -26,8 +26,6 @@ abstract contract SafeStateInternal {
     error InvariantViolationStorage(ValuePerPosition[] storagePerPosition);
     error InvariantViolationTransientStorage(ValuePerPosition[] transientStoragePerPosition);
 
-    function _revertIfTransientStorageMismatch() private {}
-
     // --------------------------- CODE -----------------------------------
     function _getCodeHash() private view returns (bytes32) {
         bytes32 codeHash;
@@ -437,3 +435,4 @@ abstract contract SafeStateInternal {
         _processMinDecreaseTransientStorage(beforeValueArray, afterValueArray, minDecreaseArray);
     }  
 }
+
