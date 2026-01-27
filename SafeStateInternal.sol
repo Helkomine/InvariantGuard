@@ -187,7 +187,6 @@ abstract contract SafeStateInternal {
     }
 
     // ------------------------------ STORAGE -------------------------------
-
     function _getNumStoragePositions(bytes32[] storage positions) private view returns (uint256) {
         return positions.length;
     }
