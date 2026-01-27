@@ -274,7 +274,7 @@ abstract contract InvariantGuardInternal {
     modifier assertStorageEquals(bytes32[] storage positions, uint256[] memory expectedArray) {
         _;
         uint256[] memory actualStorageArray = _getStorageArray(positions);
-        _validateDeltaStorage(expectedInvariantArray, actualStorageArray);
+        _validateDeltaStorage(expectedArray, actualStorageArray);
     }
     
     modifier exactIncreaseStorage(bytes32[] storage positions, uint256[] memory exactIncreaseArray) {
@@ -385,7 +385,7 @@ abstract contract InvariantGuardInternal {
     modifier assertTransientStorageEquals(bytes32[] memory positions, uint256[] memory expectedArray) {
         _;
         uint256[] memory actualStorageArray = _getTransientStorageArray(positions);
-        _validateDeltaTransientStorage(expectedInvariantArray, actualStorageArray);
+        _validateDeltaTransientStorage(expectedArray, actualStorageArray);
     }
     
     modifier exactIncreaseTransientStorage(bytes32[] memory positions, uint256[] memory exactIncreaseArray) {
@@ -430,3 +430,4 @@ abstract contract InvariantGuardInternal {
         _processMinDecreaseTransientStorage(beforeValueArray, afterValueArray, minDecreaseArray);
     }  
 }
+
