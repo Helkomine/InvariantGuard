@@ -22,7 +22,7 @@ abstract contract InvariantGuardInternal {
     }  
     error LengthMismatch();
     error UnsupportedInvariant();  
-    error WrongErrorConfiguration(DeltaRule errorOption);
+    error InvalidDeltaRule(DeltaRule rule);
     error ArrayTooLarge(uint256 length, uint256 maxLength);
     error InvariantViolationCode(CodeInvariant code);
     error InvariantViolationNonce(ValuePerPosition noncePerPosition);
@@ -81,41 +81,41 @@ abstract contract InvariantGuardInternal {
         return address(this).balance;
     }
 
-    function _validateDeltaRule(uint256 beforeValue, uint256 afterValue, uint256 expectedDelta, DeltaRule selector) private pure returns (bool) {
-        if (selector == DeltaRule.CONSTANT) {
+    function _validateDeltaRule(uint256 beforeValue, uint256 afterValue, uint256 expectedDelta, DeltaRule rule) private pure returns (bool) {
+        if (rule == DeltaRule.CONSTANT) {
             return beforeValue == afterValue;
-        } else if (selector == DeltaRule.INCREASE_EXACT) {
+        } else if (rule == DeltaRule.INCREASE_EXACT) {
             if (afterValue < beforeValue) return false;
             unchecked {
                 return afterValue - beforeValue == expectedDelta;
             }
-        } else if (selector == DeltaRule.DECREASE_EXACT) {
+        } else if (rule == DeltaRule.DECREASE_EXACT) {
             if (beforeValue < afterValue) return false;
             unchecked {
                 return beforeValue - afterValue == expectedDelta;
             }
-        } else if (selector == DeltaRule.INCREASE_MAX) {
+        } else if (rule == DeltaRule.INCREASE_MAX) {
             if (afterValue < beforeValue) return false;
             unchecked {
                 return afterValue - beforeValue <= expectedDelta;
             }
-        } else if (selector == DeltaRule.INCREASE_MIN) {
+        } else if (rule == DeltaRule.INCREASE_MIN) {
             if (afterValue < beforeValue) return false;
             unchecked {
                 return afterValue - beforeValue >= expectedDelta;
             }
-        } else if (selector == DeltaRule.DECREASE_MAX) {
+        } else if (rule == DeltaRule.DECREASE_MAX) {
             if (beforeValue < afterValue) return false;
             unchecked {
                 return beforeValue - afterValue <= expectedDelta;
             }
-        } else if (selector == DeltaRule.DECREASE_MIN) {
+        } else if (rule == DeltaRule.DECREASE_MIN) {
             if (beforeValue < afterValue) return false;
             unchecked {
                 return beforeValue - afterValue >= expectedDelta;
             }     
         } else {
-            revert WrongErrorConfiguration(selector);
+            revert InvalidDeltaRule(rule);
         }
     }
 
@@ -446,3 +446,4 @@ abstract contract InvariantGuardInternal {
         _processMinDecreaseTransientStorage(beforeValueArray, afterValueArray, minDecreaseArray);
     }  
 }
+
