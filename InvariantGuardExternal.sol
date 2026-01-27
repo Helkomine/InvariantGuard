@@ -13,7 +13,7 @@ pragma solidity ^0.8.20;
 // vào hợp đồng token, vì vậy có thể phát
 // sinh các tình huống không xác định nếu
 // hợp đồng token bất thường (metamorphic
-// logic).
+// logic)).
 abstract contract InvariantGuardExternal {
 
 }
