@@ -6,7 +6,7 @@ pragma solidity ^0.8.20;
 // Số dư ETH địa chỉ bên ngoài (không
 // cho phép chúng vi phạm bất biến nếu
 // nằm trong khung thực thi của hợp đồng
-// hiện tại.
+// hiện tại).
 // Số dư token ERC20, ERC721 trên chính nó
 // và các hợp đồng nằm trong khung thực 
 // thi của nó (áp dụng giả định tin tưởng 
@@ -14,6 +14,14 @@ pragma solidity ^0.8.20;
 // sinh các tình huống không xác định nếu
 // hợp đồng token bất thường (metamorphic
 // logic)).
+// Lưu ý rằng chúng tôi không hỗ trợ quan 
+// sát mã bên ngoài nhằm tuân thủ lộ trình
+// EOF.
 abstract contract InvariantGuardExternal {
 
+// -------- ETH BALANCE ---------
+
+// -------- ERC20 BALANCE ----------
+
+// -------- ERC721 BALANCE ----------
 }
