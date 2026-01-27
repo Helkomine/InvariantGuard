@@ -341,37 +341,37 @@ abstract contract InvariantGuardInternal {
     }    
                
     function _processExpectedInvariantTransientStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray) private pure {
-        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, new uint256[](beforeValueArray.length), ValidateSelector.IS_CONSTANT_VALUE_AND_DELTA_EQUAL);
+        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, new uint256[](beforeValueArray.length), DeltaRule.IS_CONSTANT_VALUE_AND_DELTA_EQUAL);
         if (errorAccumulator > 0) revert InvariantViolationTransientStorage(errorArray); 
     }
 
     function _processExactIncreaseTransientStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory exactIncreaseArray) private pure {
-        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, exactIncreaseArray, ValidateSelector.IS_INCREASE_VALUE_AND_DELTA_EQUAL);
+        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, exactIncreaseArray, DeltaRule.IS_INCREASE_VALUE_AND_DELTA_EQUAL);
         if (errorAccumulator > 0) revert InvariantViolationTransientStorage(errorArray);
     }
 
     function _processExactDecreaseTransientStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory exactDecreaseArray) private pure {
-        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, exactDecreaseArray, ValidateSelector.IS_DECREASE_VALUE_AND_DELTA_EQUAL);
+        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, exactDecreaseArray, DeltaRule.IS_DECREASE_VALUE_AND_DELTA_EQUAL);
         if (errorAccumulator > 0) revert InvariantViolationTransientStorage(errorArray);
     }
 
     function _processMaxIncreaseTransientStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory maxIncreaseArray) private pure {
-        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, maxIncreaseArray, ValidateSelector.IS_INCREASE_VALUE_AND_DELTA_LESS_THAN_OR_EQUAL);
+        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, maxIncreaseArray, DeltaRule.IS_INCREASE_VALUE_AND_DELTA_LESS_THAN_OR_EQUAL);
         if (errorAccumulator > 0) revert InvariantViolationTransientStorage(errorArray);
     }
 
     function _processMinIncreaseTransientStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory minIncreaseArray) private pure {
-        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, minIncreaseArray, ValidateSelector.IS_INCREASE_VALUE_AND_DELTA_GREATER_THAN_OR_EQUAL);
+        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, minIncreaseArray, DeltaRule.IS_INCREASE_VALUE_AND_DELTA_GREATER_THAN_OR_EQUAL);
         if (errorAccumulator > 0) revert InvariantViolationTransientStorage(errorArray);
     }
 
     function _processMaxDecreaseTransientStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory maxDecreaseArray) private pure {
-        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, maxDecreaseArray, ValidateSelector.IS_DECREASE_VALUE_AND_DELTA_LESS_THAN_OR_EQUAL);
+        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, maxDecreaseArray, DeltaRule.IS_DECREASE_VALUE_AND_DELTA_LESS_THAN_OR_EQUAL);
         if (errorAccumulator > 0) revert InvariantViolationTransientStorage(errorArray);
     }
 
     function _processMinDecreaseTransientStorage(uint256[] memory beforeValueArray, uint256[] memory afterValueArray, uint256[] memory minDecreaseArray) private pure {
-        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, minDecreaseArray, ValidateSelector.IS_DECREASE_VALUE_AND_DELTA_GREATER_THAN_OR_EQUAL);
+        (uint256 errorAccumulator, ValuePerPosition[] memory errorArray) = _processArray(beforeValueArray, afterValueArray, minDecreaseArray, DeltaRule.IS_DECREASE_VALUE_AND_DELTA_GREATER_THAN_OR_EQUAL);
         if (errorAccumulator > 0) revert InvariantViolationTransientStorage(errorArray);
     }
 
