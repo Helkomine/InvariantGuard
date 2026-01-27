@@ -144,7 +144,7 @@ abstract contract InvariantGuardInternal {
     }
 
     function _processMinDecreaseBalance(uint256 beforeBalance, uint256 afterBalance, uint256 minDecrease) private pure {
-        if (!_validateDeltaRule(beforeBalance, afterBalance, minDecrease, DeltaRule.DECREASE_MIN)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, minIncrease));
+        if (!_validateDeltaRule(beforeBalance, afterBalance, minDecrease, DeltaRule.DECREASE_MIN)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, minDecrease));
     }
 
     modifier invariantBalance() {
@@ -446,3 +446,4 @@ abstract contract InvariantGuardInternal {
         _processMinDecreaseTransientStorage(beforeValueArray, afterValueArray, minDecreaseArray);
     }  
 }
+
