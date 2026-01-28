@@ -42,7 +42,7 @@ abstract contract InvariantGuardInternal {
     enum DeltaRule {
         CONSTANT,         // before == after
         INCREASE_EXACT,   // after - before == delta
-        DECREASE_EXACT,   // before - after == elta
+        DECREASE_EXACT,   // before - after == delta
         INCREASE_MAX,     // after - before <= delta
         INCREASE_MIN,     // after - before >= delta
         DECREASE_MAX,     // before - after <= delta
