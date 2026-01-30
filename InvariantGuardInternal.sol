@@ -42,7 +42,7 @@ abstract contract InvariantGuardInternal {
     enum DeltaRule {
         CONSTANT,         // before == after
         INCREASE_EXACT,   // after - before == delta
-        DECREASE_EXACT,   // before - after == delta
+        DECREASE_EXACT,   // before - after == elta
         INCREASE_MAX,     // after - before <= delta
         INCREASE_MIN,     // after - before >= delta
         DECREASE_MAX,     // before - after <= delta
@@ -204,7 +204,7 @@ abstract contract InvariantGuardInternal {
      * @notice Ensures specified storage slots remain unchanged
      * @param positions List of storage slot positions to protect
      */
-    modifier invariantStorage(bytes32[] storage positions) {
+    modifier invariantStorage(bytes32[] memory positions) {
         uint256[] memory beforeValueArray = _getStorageArray(positions);
         _;
         uint256[] memory afterValueArray = _getStorageArray(positions);
@@ -214,48 +214,48 @@ abstract contract InvariantGuardInternal {
     /**
      * @notice Asserts storage values equal expected values after execution
      */
-    modifier assertStorageEquals(bytes32[] storage positions, uint256[] memory expectedArray) {
+    modifier assertStorageEquals(bytes32[] memory positions, uint256[] memory expectedArray) {
         _;
         uint256[] memory actualStorageArray = _getStorageArray(positions);
         _processConstantStorage(expectedArray, actualStorageArray);
     }
     
-    modifier exactIncreaseStorage(bytes32[] storage positions, uint256[] memory exactIncreaseArray) {
+    modifier exactIncreaseStorage(bytes32[] memory positions, uint256[] memory exactIncreaseArray) {
         uint256[] memory beforeValueArray = _getStorageArray(positions);
         _;
         uint256[] memory afterValueArray = _getStorageArray(positions);
         _processExactIncreaseStorage(beforeValueArray, afterValueArray, exactIncreaseArray);
     }
 
-    modifier exactDecreaseStorage(bytes32[] storage positions, uint256[] memory exactDecreaseArray) {
+    modifier exactDecreaseStorage(bytes32[] memory positions, uint256[] memory exactDecreaseArray) {
         uint256[] memory beforeValueArray = _getStorageArray(positions);
         _;
         uint256[] memory afterValueArray = _getStorageArray(positions);
         _processExactDecreaseStorage(beforeValueArray, afterValueArray, exactDecreaseArray);
     }
     
-    modifier maxIncreaseStorage(bytes32[] storage positions, uint256[] memory maxIncreaseArray) {
+    modifier maxIncreaseStorage(bytes32[] memory positions, uint256[] memory maxIncreaseArray) {
         uint256[] memory beforeValueArray = _getStorageArray(positions);
         _;
         uint256[] memory afterValueArray = _getStorageArray(positions);
         _processMaxIncreaseStorage(beforeValueArray, afterValueArray, maxIncreaseArray);
     }
     
-    modifier minIncreaseStorage(bytes32[] storage positions, uint256[] memory minIncreaseArray) {
+    modifier minIncreaseStorage(bytes32[] memory positions, uint256[] memory minIncreaseArray) {
         uint256[] memory beforeValueArray = _getStorageArray(positions);
         _;
         uint256[] memory afterValueArray = _getStorageArray(positions);
         _processMinIncreaseStorage(beforeValueArray, afterValueArray, minIncreaseArray);
     }
     
-    modifier maxDecreaseStorage(bytes32[] storage positions, uint256[] memory maxDecreaseArray) {
+    modifier maxDecreaseStorage(bytes32[] memory positions, uint256[] memory maxDecreaseArray) {
         uint256[] memory beforeValueArray = _getStorageArray(positions);
         _;
         uint256[] memory afterValueArray = _getStorageArray(positions);
         _processMaxDecreaseStorage(beforeValueArray, afterValueArray, maxDecreaseArray);
     }
     
-    modifier minDecreaseStorage(bytes32[] storage positions, uint256[] memory minDecreaseArray) {
+    modifier minDecreaseStorage(bytes32[] memory positions, uint256[] memory minDecreaseArray) {
         uint256[] memory beforeValueArray = _getStorageArray(positions);
         _;
         uint256[] memory afterValueArray = _getStorageArray(positions);
@@ -325,6 +325,10 @@ abstract contract InvariantGuardInternal {
     function _emptyDelta(uint256 length) private pure returns (uint256[] memory) {
         return new uint256[](length);
     }
+    
+    function _getPositionsLength(bytes32[] memory positions) private pure returns (uint256) {
+        return positions.length;
+    } 
 
     function _revertIfArrayTooLarge(uint256 numPositions) private pure {
         if (numPositions > MAX_PROTECTED_SLOTS) revert ArrayTooLarge(numPositions, MAX_PROTECTED_SLOTS);
@@ -439,16 +443,12 @@ abstract contract InvariantGuardInternal {
         if (!_validateDeltaRule(beforeBalance, afterBalance, minDecrease, DeltaRule.DECREASE_MIN)) revert InvariantViolationBalance(ValuePerPosition(beforeBalance, afterBalance, minDecrease));
     }
 
-    function _getNumStoragePositions(bytes32[] storage positions) private view returns (uint256) {
-        return positions.length;
-    }
-
     /**
      * @notice Loads values from explicit storage slots
-     * @dev Uses raw `SLOAD` via assembly
+     * @dev Uses raw sload via assembly
      */
-    function _getStorageArray(bytes32[] storage positions) private view returns (uint256[] memory) {
-        uint256 numPositions = _getNumStoragePositions(positions);
+    function _getStorageArray(bytes32[] memory positions) private view returns (uint256[] memory) {
+        uint256 numPositions = _getPositionsLength(positions);
         _revertIfArrayTooLarge(numPositions);
         uint256[] memory valueArray = new uint256[](numPositions);
         for (uint256 i = 0; i < numPositions; ) {
@@ -502,12 +502,8 @@ abstract contract InvariantGuardInternal {
      * @notice Loads values from transient storage slots
      * @dev Uses `TLOAD` (EIP-1153)
      */
-    function _getNumTransientStoragePositions(bytes32[] memory positions) private pure returns (uint256) {
-        return positions.length;
-    } 
-
     function _getTransientStorageArray(bytes32[] memory positions) private view returns (uint256[] memory) {
-        uint256 numPositions = _getNumTransientStoragePositions(positions);
+        uint256 numPositions = _getPositionsLength(positions);
         _revertIfArrayTooLarge(numPositions);
         uint256[] memory valueArray = new uint256[](numPositions);
         for (uint256 i = 0; i < numPositions; ) {
