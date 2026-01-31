@@ -49,7 +49,6 @@ abstract contract InvariantGuardInternal {
         DECREASE_MIN      // before - after >= delta  
     }
 
-
     /**
      * @notice Snapshot of contract bytecode hash before and after execution
      */
@@ -558,3 +557,4 @@ abstract contract InvariantGuardInternal {
         if (violationCount > 0) revert InvariantViolationTransientStorage(violations);
     }
 }
+
