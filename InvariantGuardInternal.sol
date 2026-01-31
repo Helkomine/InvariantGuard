@@ -389,7 +389,7 @@ abstract contract InvariantGuardInternal {
         uint256 violationCount;
         ValuePerPosition[] memory violations = new ValuePerPosition[](length);
         for (uint256 i = 0 ; i < length ; ) {            
-            valueMismatch = _validateDeltaRule(beforeValueArray[i], afterValueArray[i], expectedDeltaArray[i], deltaRule);
+            valueMismatch = !_validateDeltaRule(beforeValueArray[i], afterValueArray[i], expectedDeltaArray[i], deltaRule);
             assembly {
                 violationCount := add(violationCount, valueMismatch)
             }
