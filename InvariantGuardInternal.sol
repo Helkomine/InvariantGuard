@@ -449,7 +449,7 @@ abstract contract InvariantGuardInternal {
 
     /**
      * @notice Loads values from explicit storage slots
-     * @dev Uses raw sload via assembly
+     * @dev Uses raw `SLOAD` via assembly
      */
     function _getStorageArray(bytes32[] memory positions) private view returns (uint256[] memory) {
         uint256 numPositions = _getBytes32ArrayLength(positions);
@@ -557,3 +557,4 @@ abstract contract InvariantGuardInternal {
         if (violationCount > 0) revert InvariantViolationTransientStorage(violations);
     }
 }
+
