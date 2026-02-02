@@ -31,12 +31,12 @@ struct ValuePerPosition {
     uint256 delta;
 }  
 
-struct AccountInvariant {
-    address account;
+struct AccountArrayInvariant {
+    address[] accountArray;
 }
 
-struct TokenAddressInvariant {
-    address tokenAddress;
+struct TokenAddressArrayInvariant {
+    address[] tokenAddressArray;
 }
 
 /// @notice Mismatched array lengths during invariant validation
@@ -66,11 +66,11 @@ error InvariantViolationStorage(ValuePerPosition[] storagePerPosition);
 /// @notice Transient storage invariant violation
 error InvariantViolationTransientStorage(ValuePerPosition[] transientStoragePerPosition);
 
-error InvariantViolationExtETHBalanceArray(ValuePerPosition[] extETHBalancePerPosition);
+error InvariantViolationExtETHBalanceArray(AccountArrayInvariant accountArrayInvariant, ValuePerPosition[] extETHBalancePerPosition);
 
-error InvariantViolationERC20BalanceArray(TokenAddressInvariant[] addressInvariant, ValuePerPosition[] ERC20BalancePerPosition);
+error InvariantViolationERC20BalanceArray(TokenAddressArrayInvariant tokenAddressArrayInvariant, ValuePerPosition[] ERC20BalancePerPosition);
 
-error InvariantViolationERC721BalanceArray(TokenAddressInvariant[] addressInvariant, ValuePerPosition[] ERC721BalancePerPosition);
+error InvariantViolationERC721BalanceArray(TokenAddressArrayInvariant tokenAddressArrayInvariant, ValuePerPosition[] ERC721BalancePerPosition);
 
 library InvariantGuardHelper {
     uint256 private constant MAX_PROTECTED_SLOTS  = 0xffff;
@@ -343,97 +343,98 @@ abstract contract InvariantGuardExternal {
         return balanceArray;
     }
 
-    function _processConstantExtETHBalance(uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray) private pure {
+    function _processConstantExtETHBalance(AccountArrayInvariant memory accountArrayInvariant, uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray) private pure {
         (uint256 violationCount, ValuePerPosition[] memory violations) = beforeBalanceArray._validateDeltaArray(afterBalanceArray, beforeBalanceArray._getUint256ArrayLength()._emptyArray(), DeltaConstraint.NO_CHANGE);
-        if (violationCount > 0) revert InvariantViolationExtETHBalanceArray(violations); 
+        if (violationCount > 0) revert InvariantViolationExtETHBalanceArray(accountArrayInvariant, violations); 
     }
 
-    function _processExactIncreaseExtETHBalance(uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory exactIncreaseArray) private pure {
+    function _processExactIncreaseExtETHBalance(AccountArrayInvariant memory accountArrayInvariant, uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory exactIncreaseArray) private pure {
         (uint256 violationCount, ValuePerPosition[] memory violations) = beforeBalanceArray._validateDeltaArray(afterBalanceArray, exactIncreaseArray, DeltaConstraint.INCREASE_EXACT);
-        if (violationCount > 0) revert InvariantViolationExtETHBalanceArray(violations); 
+        if (violationCount > 0) revert InvariantViolationExtETHBalanceArray(accountArrayInvariant, violations); 
     }
 
-    function _processMaxIncreaseExtETHBalance(uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory maxIncreaseArray) private pure {
+    function _processMaxIncreaseExtETHBalance(AccountArrayInvariant memory accountArrayInvariant, uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory maxIncreaseArray) private pure {
         (uint256 violationCount, ValuePerPosition[] memory violations) = beforeBalanceArray._validateDeltaArray(afterBalanceArray, maxIncreaseArray, DeltaConstraint.INCREASE_MAX);
-        if (violationCount > 0) revert InvariantViolationExtETHBalanceArray(violations); 
+        if (violationCount > 0) revert InvariantViolationExtETHBalanceArray(accountArrayInvariant, violations); 
     }
 
-    function _processMinIncreaseExtETHBalance(uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory minIncreaseArray) private pure {
+    function _processMinIncreaseExtETHBalance(AccountArrayInvariant memory accountArrayInvariant, uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory minIncreaseArray) private pure {
         (uint256 violationCount, ValuePerPosition[] memory violations) = beforeBalanceArray._validateDeltaArray(afterBalanceArray, minIncreaseArray, DeltaConstraint.INCREASE_MIN);
-        if (violationCount > 0) revert InvariantViolationExtETHBalanceArray(violations); 
+        if (violationCount > 0) revert InvariantViolationExtETHBalanceArray(accountArrayInvariant, violations); 
     }
 
-    function _processExactDecreaseExtETHBalance(uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory exactDecreaseArray) private pure {
+    function _processExactDecreaseExtETHBalance(AccountArrayInvariant memory accountArrayInvariant, uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory exactDecreaseArray) private pure {
         (uint256 violationCount, ValuePerPosition[] memory violations) = beforeBalanceArray._validateDeltaArray(afterBalanceArray, exactDecreaseArray, DeltaConstraint.DECREASE_EXACT);
-        if (violationCount > 0) revert InvariantViolationExtETHBalanceArray(violations); 
+        if (violationCount > 0) revert InvariantViolationExtETHBalanceArray(accountArrayInvariant, violations); 
     }
 
-    function _processMaxDecreaseExtETHBalance(uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory maxDecreaseArray) private pure {
+    function _processMaxDecreaseExtETHBalance(AccountArrayInvariant memory accountArrayInvariant, uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory maxDecreaseArray) private pure {
         (uint256 violationCount, ValuePerPosition[] memory violations) = beforeBalanceArray._validateDeltaArray(afterBalanceArray, maxDecreaseArray, DeltaConstraint.DECREASE_MAX);
-        if (violationCount > 0) revert InvariantViolationExtETHBalanceArray(violations); 
+        if (violationCount > 0) revert InvariantViolationExtETHBalanceArray(accountArrayInvariant, violations); 
     }
 
-    function _processMinDecreaseExtETHBalance(uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory minDecreaseArray) private pure {
+    function _processMinDecreaseExtETHBalance(AccountArrayInvariant memory accountArrayInvariant, uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory minDecreaseArray) private pure {
         (uint256 violationCount, ValuePerPosition[] memory violations) = beforeBalanceArray._validateDeltaArray(afterBalanceArray, minDecreaseArray, DeltaConstraint.DECREASE_MIN);
-        if (violationCount > 0) revert InvariantViolationExtETHBalanceArray(violations); 
+        if (violationCount > 0) revert InvariantViolationExtETHBalanceArray(accountArrayInvariant, violations); 
     }
 
     modifier invariantExtETHBalance(address[] memory accountArray) {
         uint256[] memory beforeBalanceArray = _getExtETHBalanceArray(accountArray);
         _;
         uint256[] memory afterBalanceArray = _getExtETHBalanceArray(accountArray);
-        _processConstantExtETHBalance(beforeBalanceArray, afterBalanceArray);
+        _processConstantExtETHBalance(AccountArrayInvariant(accountArray), beforeBalanceArray, afterBalanceArray);
     }
 
     modifier assertExtETHBalanceEquals(address[] memory accountArray, uint256[] memory expectedArray) {
         _;
         uint256[] memory actualBalanceArray = _getExtETHBalanceArray(accountArray);
-        _processConstantExtETHBalance(expectedArray, actualBalanceArray);
+        _processConstantExtETHBalance(AccountArrayInvariant(accountArray), expectedArray, actualBalanceArray);
     }
 
     modifier exactIncreaseExtETHBalance(address[] memory accountArray, uint256[] memory exactIncreaseArray) {
         uint256[] memory beforeBalanceArray = _getExtETHBalanceArray(accountArray);
         _;
         uint256[] memory afterBalanceArray = _getExtETHBalanceArray(accountArray);
-        _processExactIncreaseExtETHBalance(beforeBalanceArray, afterBalanceArray, exactIncreaseArray);
+        _processExactIncreaseExtETHBalance(AccountArrayInvariant(accountArray), beforeBalanceArray, afterBalanceArray, exactIncreaseArray);
     }
 
     modifier maxIncreaseExtETHBalance(address[] memory accountArray, uint256[] memory maxIncreaseArray) {
         uint256[] memory beforeBalanceArray = _getExtETHBalanceArray(accountArray);
         _;
         uint256[] memory afterBalanceArray = _getExtETHBalanceArray(accountArray);
-        _processMaxIncreaseExtETHBalance(beforeBalanceArray, afterBalanceArray, maxIncreaseArray);
+        _processMaxIncreaseExtETHBalance(AccountArrayInvariant(accountArray), beforeBalanceArray, afterBalanceArray, maxIncreaseArray);
     }
 
     modifier minIncreaseExtETHBalance(address[] memory accountArray, uint256[] memory minIncreaseArray) {
         uint256[] memory beforeBalanceArray = _getExtETHBalanceArray(accountArray);
         _;
         uint256[] memory afterBalanceArray = _getExtETHBalanceArray(accountArray);
-        _processMinIncreaseExtETHBalance(beforeBalanceArray, afterBalanceArray, minIncreaseArray);
+        _processMinIncreaseExtETHBalance(AccountArrayInvariant(accountArray), beforeBalanceArray, afterBalanceArray, minIncreaseArray);
     }
 
     modifier exactDecreaseExtETHBalance(address[] memory accountArray, uint256[] memory exactDecreaseArray) {
         uint256[] memory beforeBalanceArray = _getExtETHBalanceArray(accountArray);
         _;
         uint256[] memory afterBalanceArray = _getExtETHBalanceArray(accountArray);
-        _processExactDecreaseExtETHBalance(beforeBalanceArray, afterBalanceArray, exactDecreaseArray);
+        _processExactDecreaseExtETHBalance(AccountArrayInvariant(accountArray), beforeBalanceArray, afterBalanceArray, exactDecreaseArray);
     }
 
     modifier maxDecreaseExtETHBalance(address[] memory accountArray, uint256[] memory maxDecreaseArray) {
         uint256[] memory beforeBalanceArray = _getExtETHBalanceArray(accountArray);
         _;
         uint256[] memory afterBalanceArray = _getExtETHBalanceArray(accountArray);
-        _processMaxDecreaseExtETHBalance(beforeBalanceArray, afterBalanceArray, maxDecreaseArray);
+        _processMaxDecreaseExtETHBalance(AccountArrayInvariant(accountArray), beforeBalanceArray, afterBalanceArray, maxDecreaseArray);
     }
 
     modifier minDecreaseExtETHBalance(address[] memory accountArray, uint256[] memory minDecreaseArray) {
         uint256[] memory beforeBalanceArray = _getExtETHBalanceArray(accountArray);
         _;
         uint256[] memory afterBalanceArray = _getExtETHBalanceArray(accountArray);
-        _processMinDecreaseExtETHBalance(beforeBalanceArray, afterBalanceArray, minDecreaseArray);
+        _processMinDecreaseExtETHBalance(AccountArrayInvariant(accountArray), beforeBalanceArray, afterBalanceArray, minDecreaseArray);
     }
 }
 
+/*
 // Hợp đồng này bảo vệ bất biến trên các token ERC20
 // Áp dụng giả định tin tưởng do thực hiện truy vấn bên
 // ngoài, vì vậy có thể phát sinh các tình huống không xác
