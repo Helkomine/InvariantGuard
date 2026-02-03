@@ -31,12 +31,25 @@ struct ValuePerPosition {
     uint256 delta;
 }  
 
+struct AddressInvariant {
+    address beforeOwner;
+    address afterOwner;
+}
+
 struct AccountArrayInvariant {
     address[] accountArray;
 }
 
-struct TokenAddressArrayInvariant {
-    address[] tokenAddressArray;
+struct ERC20ArrayInvariant {
+    IERC20[] tokenERC20ArrayInvariant;
+}
+
+struct ERC721ArrayInvariant {
+    IERC721[] tokenERC721ArrayInvariant;
+}
+
+struct ERC721TokenIdArray {
+    uint256[] tokenIdERC721Array;
 }
 
 /// @notice Mismatched array lengths during invariant validation
@@ -68,9 +81,11 @@ error InvariantViolationTransientStorage(ValuePerPosition[] transientStoragePerP
 
 error InvariantViolationExtETHBalanceArray(AccountArrayInvariant accountArrayInvariant, ValuePerPosition[] extETHBalancePerPosition);
 
-error InvariantViolationERC20BalanceArray(TokenAddressArrayInvariant tokenAddressArrayInvariant, ValuePerPosition[] ERC20BalancePerPosition);
+error InvariantViolationERC20BalanceArray(ERC20ArrayInvariant tokenERC20ArrayInvariant, AccountArrayInvariant accountArrayInvariant, ValuePerPosition[] ERC20BalancePerPosition);
 
-error InvariantViolationERC721BalanceArray(TokenAddressArrayInvariant tokenAddressArrayInvariant, ValuePerPosition[] ERC721BalancePerPosition);
+error InvariantViolationERC721BalanceArray(ERC721ArrayInvariant tokenERC721ArrayInvariant, AccountArrayInvariant accountArrayInvariant, ValuePerPosition[] ERC721BalancePerPosition);
+
+error InvariantViolationERC721OwnerArray(ERC721ArrayInvariant tokenERC721ArrayInvariant, ERC721TokenIdArray tokenIdERC721Array, AddressInvariant[] addressInvariantArray);
 
 library InvariantGuardHelper {
     uint256 private constant MAX_PROTECTED_SLOTS  = 0xffff;
@@ -434,7 +449,7 @@ abstract contract InvariantGuardExternal {
     }
 }
 
-/*
+
 // Hợp đồng này bảo vệ bất biến trên các token ERC20
 // Áp dụng giả định tin tưởng do thực hiện truy vấn bên
 // ngoài, vì vậy có thể phát sinh các tình huống không xác
@@ -464,98 +479,97 @@ abstract contract InvariantGuardERC20 {
         return balanceArray;
     }
 
-    function _processConstantERC20Balance(uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray) private pure {
+    function _processConstantERC20Balance(ERC20ArrayInvariant memory tokenERC20ArrayInvariant, AccountArrayInvariant memory accountArrayInvariant, uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray) private pure {
         (uint256 violationCount, ValuePerPosition[] memory violations) = beforeBalanceArray._validateDeltaArray(afterBalanceArray, beforeBalanceArray._getUint256ArrayLength()._emptyArray(), DeltaConstraint.NO_CHANGE);
-        if (violationCount > 0) revert InvariantViolationExtETHBalanceArray(violations); 
+        if (violationCount > 0) revert InvariantViolationERC20BalanceArray(tokenERC20ArrayInvariant, accountArrayInvariant, violations); 
     }
 
-    function _processExactIncreaseERC20Balance(uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory exactIncreaseArray) private pure {
+    function _processExactIncreaseERC20Balance(ERC20ArrayInvariant memory tokenERC20ArrayInvariant, AccountArrayInvariant memory accountArrayInvariant, uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory exactIncreaseArray) private pure {
         (uint256 violationCount, ValuePerPosition[] memory violations) = beforeBalanceArray._validateDeltaArray(afterBalanceArray, exactIncreaseArray, DeltaConstraint.INCREASE_EXACT);
-        if (violationCount > 0) revert InvariantViolationExtETHBalanceArray(violations); 
+        if (violationCount > 0) revert InvariantViolationERC20BalanceArray(tokenERC20ArrayInvariant, accountArrayInvariant, violations); 
     }
 
-    function _processMaxIncreaseERC20Balance(uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory maxIncreaseArray) private pure {
+    function _processMaxIncreaseERC20Balance(ERC20ArrayInvariant memory tokenERC20ArrayInvariant, AccountArrayInvariant memory accountArrayInvariant, uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory maxIncreaseArray) private pure {
         (uint256 violationCount, ValuePerPosition[] memory violations) = beforeBalanceArray._validateDeltaArray(afterBalanceArray, maxIncreaseArray, DeltaConstraint.INCREASE_MAX);
-        if (violationCount > 0) revert InvariantViolationExtETHBalanceArray(violations); 
+        if (violationCount > 0) revert InvariantViolationERC20BalanceArray(tokenERC20ArrayInvariant, accountArrayInvariant, violations); 
     }
 
-    function _processMinIncreaseERC20Balance(uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory minIncreaseArray) private pure {
+    function _processMinIncreaseERC20Balance(ERC20ArrayInvariant memory tokenERC20ArrayInvariant, AccountArrayInvariant memory accountArrayInvariant, uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory minIncreaseArray) private pure {
         (uint256 violationCount, ValuePerPosition[] memory violations) = beforeBalanceArray._validateDeltaArray(afterBalanceArray, minIncreaseArray, DeltaConstraint.INCREASE_MIN);
-        if (violationCount > 0) revert InvariantViolationExtETHBalanceArray(violations); 
+        if (violationCount > 0) revert InvariantViolationERC20BalanceArray(tokenERC20ArrayInvariant, accountArrayInvariant, violations); 
     }
 
-    function _processExactDecreaseERC20Balance(uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory exactDecreaseArray) private pure {
+    function _processExactDecreaseERC20Balance(ERC20ArrayInvariant memory tokenERC20ArrayInvariant, AccountArrayInvariant memory accountArrayInvariant, uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory exactDecreaseArray) private pure {
         (uint256 violationCount, ValuePerPosition[] memory violations) = beforeBalanceArray._validateDeltaArray(afterBalanceArray, exactDecreaseArray, DeltaConstraint.DECREASE_EXACT);
-        if (violationCount > 0) revert InvariantViolationExtETHBalanceArray(violations); 
+        if (violationCount > 0) revert InvariantViolationERC20BalanceArray(tokenERC20ArrayInvariant, accountArrayInvariant, violations); 
     }
 
-    function _processMaxDecreaseERC20Balance(uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory maxDecreaseArray) private pure {
+    function _processMaxDecreaseERC20Balance(ERC20ArrayInvariant memory tokenERC20ArrayInvariant, AccountArrayInvariant memory accountArrayInvariant, uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory maxDecreaseArray) private pure {
         (uint256 violationCount, ValuePerPosition[] memory violations) = beforeBalanceArray._validateDeltaArray(afterBalanceArray, maxDecreaseArray, DeltaConstraint.DECREASE_MAX);
-        if (violationCount > 0) revert InvariantViolationExtETHBalanceArray(violations); 
+        if (violationCount > 0) revert InvariantViolationERC20BalanceArray(tokenERC20ArrayInvariant, accountArrayInvariant, violations); 
     }
 
-    function _processMinDecreaseERC20Balance(uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory minDecreaseArray) private pure {
+    function _processMinDecreaseERC20Balance(ERC20ArrayInvariant memory tokenERC20ArrayInvariant, AccountArrayInvariant memory accountArrayInvariant, uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory minDecreaseArray) private pure {
         (uint256 violationCount, ValuePerPosition[] memory violations) = beforeBalanceArray._validateDeltaArray(afterBalanceArray, minDecreaseArray, DeltaConstraint.DECREASE_MIN);
-        if (violationCount > 0) revert InvariantViolationExtETHBalanceArray(violations); 
+        if (violationCount > 0) revert InvariantViolationERC20BalanceArray(tokenERC20ArrayInvariant, accountArrayInvariant, violations); 
     }
 
     modifier invariantERC20Balance(IERC20[] memory tokenArray, address[] memory accountArray) {
         uint256[] memory beforeBalanceArray = _getERC20BalanceArray(tokenArray, accountArray);
         _;
         uint256[] memory afterBalanceArray = _getERC20BalanceArray(tokenArray, accountArray);
-        _processConstantERC20Balance(beforeBalanceArray, afterBalanceArray);
+        _processConstantERC20Balance(ERC20ArrayInvariant(tokenArray), AccountArrayInvariant(accountArray), beforeBalanceArray, afterBalanceArray);
     }
 
     modifier assertERC20BalanceEquals(IERC20[] memory tokenArray, address[] memory accountArray, uint256[] memory expectedArray) {
         _;
         uint256[] memory actualBalanceArray = _getERC20BalanceArray(tokenArray, accountArray);
-        //InvariantGuardHelper._processConstantBalance(expected, actualBalance);
+        _processConstantERC20Balance(ERC20ArrayInvariant(tokenArray), AccountArrayInvariant(accountArray), actualBalanceArray, expectedArray);
     }
 
-    modifier exactIncreaseERC20Balance(IERC20[] memory tokenArray, address[] memory accountArray, uint256 exactIncrease) {
+    modifier exactIncreaseERC20Balance(IERC20[] memory tokenArray, address[] memory accountArray, uint256[] memory exactIncreaseArray) {
         uint256[] memory beforeBalanceArray = _getERC20BalanceArray(tokenArray, accountArray);
         _;
         uint256[] memory afterBalanceArray = _getERC20BalanceArray(tokenArray, accountArray);
-        //InvariantGuardHelper._processExactIncreaseBalance(beforeBalance, afterBalance, exactIncrease);
+        _processExactIncreaseERC20Balance(ERC20ArrayInvariant(tokenArray), AccountArrayInvariant(accountArray), beforeBalanceArray, afterBalanceArray, exactIncreaseArray);
     }
 
-    modifier exactDecreaseERC20Balance(IERC20[] memory tokenArray, address[] memory accountArray, uint256 exactDecrease) {
+    modifier maxIncreaseERC20Balance(IERC20[] memory tokenArray, address[] memory accountArray, uint256[] memory maxIncreaseArray) {
         uint256[] memory beforeBalanceArray = _getERC20BalanceArray(tokenArray, accountArray);
         _;
         uint256[] memory afterBalanceArray = _getERC20BalanceArray(tokenArray, accountArray);
-        //InvariantGuardHelper._processExactDecreaseBalance(beforeBalance, afterBalance, exactDecrease);
+        _processMaxIncreaseERC20Balance(ERC20ArrayInvariant(tokenArray), AccountArrayInvariant(accountArray), beforeBalanceArray, afterBalanceArray, maxIncreaseArray);
     }
 
-    modifier maxIncreaseERC20Balance(IERC20[] memory tokenArray, address[] memory accountArray, uint256 maxIncrease) {
+    modifier minIncreaseERC20Balance(IERC20[] memory tokenArray, address[] memory accountArray, uint256[] memory minIncreaseArray) {
         uint256[] memory beforeBalanceArray = _getERC20BalanceArray(tokenArray, accountArray);
         _;
         uint256[] memory afterBalanceArray = _getERC20BalanceArray(tokenArray, accountArray);
-        //InvariantGuardHelper._processMaxIncreaseBalance(beforeBalance, afterBalance, maxIncrease);
+        _processMinIncreaseERC20Balance(ERC20ArrayInvariant(tokenArray), AccountArrayInvariant(accountArray), beforeBalanceArray, afterBalanceArray, minIncreaseArray);
     }
 
-    modifier minIncreaseERC20Balance(IERC20[] memory tokenArray, address[] memory accountArray, uint256 minIncrease) {
+    modifier exactDecreaseERC20Balance(IERC20[] memory tokenArray, address[] memory accountArray, uint256[] memory exactDecreaseArray) {
         uint256[] memory beforeBalanceArray = _getERC20BalanceArray(tokenArray, accountArray);
         _;
         uint256[] memory afterBalanceArray = _getERC20BalanceArray(tokenArray, accountArray);
-        //InvariantGuardHelper._processMinIncreaseBalance(beforeBalance, afterBalance, minIncrease);
+        _processExactDecreaseERC20Balance(ERC20ArrayInvariant(tokenArray), AccountArrayInvariant(accountArray), beforeBalanceArray, afterBalanceArray, exactDecreaseArray);
     }
 
-    modifier maxDecreaseERC20Balance(IERC20[] memory tokenArray, address[] memory accountArray, uint256 maxDecrease) {
+    modifier maxDecreaseERC20Balance(IERC20[] memory tokenArray, address[] memory accountArray, uint256[] memory maxDecreaseArray) {
         uint256[] memory beforeBalanceArray = _getERC20BalanceArray(tokenArray, accountArray);
         _;
         uint256[] memory afterBalanceArray = _getERC20BalanceArray(tokenArray, accountArray);
-        //InvariantGuardHelper._processMaxDecreaseBalance(beforeBalance, afterBalance, maxDecrease);
+        _processMaxDecreaseERC20Balance(ERC20ArrayInvariant(tokenArray), AccountArrayInvariant(accountArray), beforeBalanceArray, afterBalanceArray, maxDecreaseArray);
     }
 
-    modifier minDecreaseERC20Balance(IERC20[] memory tokenArray, address[] memory accountArray, uint256 minDecrease) {
+    modifier minDecreaseERC20Balance(IERC20[] memory tokenArray, address[] memory accountArray, uint256[] memory minDecreaseArray) {
         uint256[] memory beforeBalanceArray = _getERC20BalanceArray(tokenArray, accountArray);
         _;
         uint256[] memory afterBalanceArray = _getERC20BalanceArray(tokenArray, accountArray);
-        //InvariantGuardHelper._processMinDecreaseBalance(beforeBalance, afterBalance, minDecrease);
+        _processMinDecreaseERC20Balance(ERC20ArrayInvariant(tokenArray), AccountArrayInvariant(accountArray), beforeBalanceArray, afterBalanceArray, minDecreaseArray);
     }
 }
 
-/*
 // Hợp đồng này bảo vệ bất biến trên các token ERC721
 // Áp dụng giả định tin tưởng do thực hiện truy vấn bên
 // ngoài, vì vậy có thể phát sinh các tình huống không xác
@@ -567,64 +581,117 @@ abstract contract InvariantGuardERC20 {
 // Số dư trên một hoặc nhiều token ERC721 được chỉ định
 // Chủ sở hữu trên một hoặc nhiều token ERC721 được chỉ định
 abstract contract InvariantGuardERC721 {
+    using InvariantGuardHelper for uint256;
+    using InvariantGuardHelper for uint256[];
+
+    function _getAddressArrayLength(address[] memory accountArray) private pure returns (uint256) {
+        return accountArray.length;
+    }
+
     // BALANCE OF
     function _getERC721Balance(IERC721 token, address account) private view returns (uint256) {
         return token.balanceOf(account);
     }
 
-    modifier invariantERC721Balance(IERC721 token, address account) {
-        uint256 beforeBalance = _getERC721Balance(token, account);
-        _;
-        uint256 afterBalance = _getERC721Balance(token, account);
-        InvariantGuardHelper._processConstantBalance(beforeBalance, afterBalance);
+    function _getERC721BalanceArray(IERC721[] memory tokenArray, address[] memory accountArray) private view returns (uint256[] memory) {
+        uint256 length = _getAddressArrayLength(accountArray);
+        length._revertIfArrayTooLarge();
+        uint256[] memory balanceArray = new uint256[](length);
+        for (uint256 i = 0 ; i < length ; ) {
+            balanceArray[i] = _getERC721Balance(tokenArray[i], accountArray[i]);
+            unchecked { ++i; }
+        }
+        return balanceArray;
     }
 
-    modifier assertERC721BalanceEquals(IERC721 token, address account, uint256 expected) {
-        _;
-        uint256 actualBalance = _getERC721Balance(token, account);
-        InvariantGuardHelper._processConstantBalance(expected, actualBalance);
+    function _processConstantERC721Balance(ERC721ArrayInvariant memory tokenERC721ArrayInvariant, AccountArrayInvariant memory accountArrayInvariant, uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray) private pure {
+        (uint256 violationCount, ValuePerPosition[] memory violations) = beforeBalanceArray._validateDeltaArray(afterBalanceArray, beforeBalanceArray._getUint256ArrayLength()._emptyArray(), DeltaConstraint.NO_CHANGE);
+        if (violationCount > 0) revert InvariantViolationERC721BalanceArray(tokenERC721ArrayInvariant, accountArrayInvariant, violations); 
     }
 
-    modifier exactIncreaseERC721Balance(IERC721 token, address account, uint256 exactIncrease) {
-        uint256 beforeBalance = _getERC721Balance(token, account);
-        _;
-        uint256 afterBalance = _getERC721Balance(token, account);
-        InvariantGuardHelper._processExactIncreaseBalance(beforeBalance, afterBalance, exactIncrease);
+    function _processExactIncreaseERC721Balance(ERC721ArrayInvariant memory tokenERC721ArrayInvariant, AccountArrayInvariant memory accountArrayInvariant, uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory exactIncreaseArray) private pure {
+        (uint256 violationCount, ValuePerPosition[] memory violations) = beforeBalanceArray._validateDeltaArray(afterBalanceArray, exactIncreaseArray, DeltaConstraint.INCREASE_EXACT);
+        if (violationCount > 0) revert InvariantViolationERC721BalanceArray(tokenERC721ArrayInvariant, accountArrayInvariant, violations); 
     }
 
-    modifier exactDecreaseERC721Balance(IERC721 token, address account, uint256 exactDecrease) {
-        uint256 beforeBalance = _getERC721Balance(token, account);
-        _;
-        uint256 afterBalance = _getERC721Balance(token, account);
-        InvariantGuardHelper._processExactDecreaseBalance(beforeBalance, afterBalance, exactDecrease);
+    function _processMaxIncreaseERC721Balance(ERC721ArrayInvariant memory tokenERC721ArrayInvariant, AccountArrayInvariant memory accountArrayInvariant, uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory maxIncreaseArray) private pure {
+        (uint256 violationCount, ValuePerPosition[] memory violations) = beforeBalanceArray._validateDeltaArray(afterBalanceArray, maxIncreaseArray, DeltaConstraint.INCREASE_MAX);
+        if (violationCount > 0) revert InvariantViolationERC721BalanceArray(tokenERC721ArrayInvariant, accountArrayInvariant, violations); 
     }
 
-    modifier maxIncreaseERC721Balance(IERC721 token, address account, uint256 maxIncrease) {
-        uint256 beforeBalance = _getERC721Balance(token, account);
-        _;
-        uint256 afterBalance = _getERC721Balance(token, account);
-        InvariantGuardHelper._processMaxIncreaseBalance(beforeBalance, afterBalance, maxIncrease);
+    function _processMinIncreaseERC721Balance(ERC721ArrayInvariant memory tokenERC721ArrayInvariant, AccountArrayInvariant memory accountArrayInvariant, uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory minIncreaseArray) private pure {
+        (uint256 violationCount, ValuePerPosition[] memory violations) = beforeBalanceArray._validateDeltaArray(afterBalanceArray, minIncreaseArray, DeltaConstraint.INCREASE_MIN);
+        if (violationCount > 0) revert InvariantViolationERC721BalanceArray(tokenERC721ArrayInvariant, accountArrayInvariant, violations); 
     }
 
-    modifier minIncreaseERC721Balance(IERC721 token, address account, uint256 minIncrease) {
-        uint256 beforeBalance = _getERC721Balance(token, account);
-        _;
-        uint256 afterBalance = _getERC721Balance(token, account);
-        InvariantGuardHelper._processMinIncreaseBalance(beforeBalance, afterBalance, minIncrease);
+    function _processExactDecreaseERC721Balance(ERC721ArrayInvariant memory tokenERC721ArrayInvariant, AccountArrayInvariant memory accountArrayInvariant, uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory exactDecreaseArray) private pure {
+        (uint256 violationCount, ValuePerPosition[] memory violations) = beforeBalanceArray._validateDeltaArray(afterBalanceArray, exactDecreaseArray, DeltaConstraint.DECREASE_EXACT);
+        if (violationCount > 0) revert InvariantViolationERC721BalanceArray(tokenERC721ArrayInvariant, accountArrayInvariant, violations); 
     }
 
-    modifier maxDecreaseERC721Balance(IERC721 token, address account, uint256 maxDecrease) {
-        uint256 beforeBalance = _getERC721Balance(token, account);
-        _;
-        uint256 afterBalance = _getERC721Balance(token, account);
-        InvariantGuardHelper._processMaxDecreaseBalance(beforeBalance, afterBalance, maxDecrease);
+    function _processMaxDecreaseERC721Balance(ERC721ArrayInvariant memory tokenERC721ArrayInvariant, AccountArrayInvariant memory accountArrayInvariant, uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory maxDecreaseArray) private pure {
+        (uint256 violationCount, ValuePerPosition[] memory violations) = beforeBalanceArray._validateDeltaArray(afterBalanceArray, maxDecreaseArray, DeltaConstraint.DECREASE_MAX);
+        if (violationCount > 0) revert InvariantViolationERC721BalanceArray(tokenERC721ArrayInvariant, accountArrayInvariant, violations); 
     }
 
-    modifier minDecreaseERC721Balance(IERC721 token, address account, uint256 minDecrease) {
-        uint256 beforeBalance = _getERC721Balance(token, account);
+    function _processMinDecreaseERC721Balance(ERC721ArrayInvariant memory tokenERC721ArrayInvariant, AccountArrayInvariant memory accountArrayInvariant, uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory minDecreaseArray) private pure {
+        (uint256 violationCount, ValuePerPosition[] memory violations) = beforeBalanceArray._validateDeltaArray(afterBalanceArray, minDecreaseArray, DeltaConstraint.DECREASE_MIN);
+        if (violationCount > 0) revert InvariantViolationERC721BalanceArray(tokenERC721ArrayInvariant, accountArrayInvariant, violations); 
+    }
+
+    modifier invariantERC721Balance(IERC721[] memory tokenArray, address[] memory accountArray) {
+        uint256[] memory beforeBalanceArray = _getERC721BalanceArray(tokenArray, accountArray);
         _;
-        uint256 afterBalance = _getERC721Balance(token, account);
-        InvariantGuardHelper._processMinDecreaseBalance(beforeBalance, afterBalance, minDecrease);
+        uint256[] memory afterBalanceArray = _getERC721BalanceArray(tokenArray, accountArray);
+        _processConstantERC721Balance(ERC721ArrayInvariant(tokenArray), AccountArrayInvariant(accountArray), beforeBalanceArray, afterBalanceArray);
+    }
+
+    modifier assertERC721BalanceEquals(IERC721[] memory tokenArray, address[] memory accountArray, uint256[] memory expectedArray) {
+        _;
+        uint256[] memory actualBalanceArray = _getERC721BalanceArray(tokenArray, accountArray);
+        _processConstantERC721Balance(ERC721ArrayInvariant(tokenArray), AccountArrayInvariant(accountArray), expectedArray, actualBalanceArray);
+    }
+
+    modifier exactIncreaseERC721Balance(IERC721[] memory tokenArray, address[] memory accountArray, uint256[] memory exactIncreaseArray) {
+        uint256[] memory beforeBalanceArray = _getERC721BalanceArray(tokenArray, accountArray);
+        _;
+        uint256[] memory afterBalanceArray = _getERC721BalanceArray(tokenArray, accountArray);
+        _processExactIncreaseERC721Balance(ERC721ArrayInvariant(tokenArray), AccountArrayInvariant(accountArray), beforeBalanceArray, afterBalanceArray, exactIncreaseArray);
+    }
+
+    modifier maxIncreaseERC721Balance(IERC721[] memory tokenArray, address[] memory accountArray, uint256[] memory maxIncreaseArray) {
+        uint256[] memory beforeBalanceArray = _getERC721BalanceArray(tokenArray, accountArray);
+        _;
+        uint256[] memory afterBalanceArray = _getERC721BalanceArray(tokenArray, accountArray);
+        _processMaxIncreaseERC721Balance(ERC721ArrayInvariant(tokenArray), AccountArrayInvariant(accountArray), beforeBalanceArray, afterBalanceArray, maxIncreaseArray);
+    }
+
+    modifier minIncreaseERC721Balance(IERC721[] memory tokenArray, address[] memory accountArray, uint256[] memory minIncreaseArray) {
+        uint256[] memory beforeBalanceArray = _getERC721BalanceArray(tokenArray, accountArray);
+        _;
+        uint256[] memory afterBalanceArray = _getERC721BalanceArray(tokenArray, accountArray);
+        _processMinIncreaseERC721Balance(ERC721ArrayInvariant(tokenArray), AccountArrayInvariant(accountArray), beforeBalanceArray, afterBalanceArray, minIncreaseArray);
+    }
+
+    modifier exactDecreaseERC721Balance(IERC721[] memory tokenArray, address[] memory accountArray, uint256[] memory exactDecreaseArray) {
+        uint256[] memory beforeBalanceArray = _getERC721BalanceArray(tokenArray, accountArray);
+        _;
+        uint256[] memory afterBalanceArray = _getERC721BalanceArray(tokenArray, accountArray);
+        _processExactDecreaseERC721Balance(ERC721ArrayInvariant(tokenArray), AccountArrayInvariant(accountArray), beforeBalanceArray, afterBalanceArray, exactDecreaseArray);
+    }
+
+    modifier maxDecreaseERC721Balance(IERC721[] memory tokenArray, address[] memory accountArray, uint256[] memory maxDecreaseArray) {
+        uint256[] memory beforeBalanceArray = _getERC721BalanceArray(tokenArray, accountArray);
+        _;
+        uint256[] memory afterBalanceArray = _getERC721BalanceArray(tokenArray, accountArray);
+        _processMaxDecreaseERC721Balance(ERC721ArrayInvariant(tokenArray), AccountArrayInvariant(accountArray), beforeBalanceArray, afterBalanceArray, maxDecreaseArray);
+    }
+
+    modifier minDecreaseERC721Balance(IERC721[] memory tokenArray, address[] memory accountArray, uint256[] memory minDecreaseArray) {
+        uint256[] memory beforeBalanceArray = _getERC721BalanceArray(tokenArray, accountArray);
+        _;
+        uint256[] memory afterBalanceArray = _getERC721BalanceArray(tokenArray, accountArray);
+        _processMinDecreaseERC721Balance(ERC721ArrayInvariant(tokenArray), AccountArrayInvariant(accountArray), beforeBalanceArray, afterBalanceArray, minDecreaseArray);
     }
 
     // OWNER OF
@@ -632,43 +699,44 @@ abstract contract InvariantGuardERC721 {
         return token.ownerOf(tokenId);
     }
 
-    function _getERC721ListOwner(IERC721 token, uint256[] memory tokenIds) private view returns (address[] memory) {
-        uint256 length = tokenIds.length;
+    function _getERC721OwnerArray(IERC721[] memory tokenArray, uint256[] memory tokenIdArray) private view returns (address[] memory) {
+        uint256 length = tokenArray.length;
+        length._revertIfArrayTooLarge();
         address[] memory ownerArray = new address[](length);
         for (uint256 i = 0 ; i < length ; ) {
-            ownerArray[i] = _getERC721Owner(token, tokenIds[i]);
+            ownerArray[i] = _getERC721Owner(tokenArray[i], tokenIdArray[i]);
         }
         return ownerArray;
     }
 
     // bất biến chủ sở hữu trước và sau khi thực thi
-    modifier invariantOwner(IERC721 token, uint256[] memory tokenIds) {
-        address[] memory beforeOwnerArray = _getERC721ListOwner(token, tokenIds);
+    modifier invariantERC721Owner(IERC721[] memory tokenArray, uint256[] memory tokenIdArray) {
+        address[] memory beforeOwnerArray = _getERC721OwnerArray(tokenArray, tokenIdArray);
         _;
-        address[] memory afterOwnerArray = _getERC721ListOwner(token, tokenIds);
-        _processConstantOwner(beforeOwnerArray, afterOwnerArray);
+        address[] memory afterOwnerArray = _getERC721OwnerArray(tokenArray, tokenIdArray);
+        _processConstantERC721Owner(ERC721ArrayInvariant(tokenArray), ERC721TokenIdArray(tokenIdArray), beforeOwnerArray, afterOwnerArray);
     }
 
     // bất biến chủ sở hữu kì vọng và thực tế sau khi thực thi
-    modifier assertOwnerEquals(IERC721 token, uint256[] memory tokenIds, address[] memory expectedArray) {
+    modifier assertERC721OwnerEquals(IERC721[] memory tokenArray, uint256[] memory tokenIdArray, address[] memory expectedArray) {
         _;
-        address[] memory actualOwnerArray = _getERC721ListOwner(token, tokenIds);
-        _processConstantOwner(expectedArray, actualOwnerArray);
+        address[] memory actualOwnerArray = _getERC721OwnerArray(tokenArray, tokenIdArray);
+        _processConstantERC721Owner(ERC721ArrayInvariant(tokenArray), ERC721TokenIdArray(tokenIdArray), expectedArray, actualOwnerArray);
     }
 
-    function _processConstantOwner(address[] memory beforeOwnerArray, address[] memory afterOwnerArray) private pure {
+    function _processConstantERC721Owner(ERC721ArrayInvariant memory tokenERC721ArrayInvariant, ERC721TokenIdArray memory tokenIdERC721Array, address[] memory beforeOwnerArray, address[] memory afterOwnerArray) private pure {
         (uint256 violationCount, AddressInvariant[] memory violations) = _validateAddressArray(beforeOwnerArray, afterOwnerArray);
-        if (violationCount > 0) revert InvariantViolationAddress(violations); 
+        if (violationCount > 0) revert InvariantViolationERC721OwnerArray(tokenERC721ArrayInvariant, tokenIdERC721Array, violations); 
     }
 
     function _validateAddressArray(address[] memory beforeOwnerArray, address[] memory afterOwnerArray) private pure returns (uint256, AddressInvariant[] memory) {
-        uint256 length = afterOwnerArray.length;
-        if (beforeOwnerArray.length != length) revert LengthMismatch();
-        bool valueMismatch;       
+        uint256 length = _getAddressArrayLength(afterOwnerArray);
+        length._revertIfArrayTooLarge();
+        bool valueMismatch;
         uint256 violationCount;
         AddressInvariant[] memory violations = new AddressInvariant[](length);
-        for (uint256 i = 0 ; i < length ; ) {
-            valueMismatch = beforeOwnerArray[i] == afterOwnerArray[i];
+        for (uint256 i = 0 ; i < length ; ) {            
+            valueMismatch = beforeOwnerArray[i] != afterOwnerArray[i];
             assembly {
                 violationCount := add(violationCount, valueMismatch)
             }
@@ -678,5 +746,3 @@ abstract contract InvariantGuardERC721 {
         return (violationCount, violations);
     }
 }
-
-*/
