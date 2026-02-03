@@ -336,8 +336,7 @@ library InvariantGuardHelper {
 // sát mã bên ngoài nhằm tuân thủ lộ trình
 // EOF.
 abstract contract InvariantGuardExternal {
-    using InvariantGuardHelper for uint256;
-    using InvariantGuardHelper for uint256[];
+    using InvariantGuardHelper for *;
     
     function _getAddressArrayLength(address[] memory accountArray) private pure returns (uint256) {
         return accountArray.length;
@@ -457,8 +456,7 @@ abstract contract InvariantGuardExternal {
 // Các hạng mục bảo vệ : 
 // Số dư trên một hoặc nhiều token ERC20 được chỉ định
 abstract contract InvariantGuardERC20 {
-    using InvariantGuardHelper for uint256;
-    using InvariantGuardHelper for uint256[];
+    using InvariantGuardHelper for *;
 
     function _getAddressArrayLength(address[] memory accountArray) private pure returns (uint256) {
         return accountArray.length;
@@ -581,8 +579,7 @@ abstract contract InvariantGuardERC20 {
 // Số dư trên một hoặc nhiều token ERC721 được chỉ định
 // Chủ sở hữu trên một hoặc nhiều token ERC721 được chỉ định
 abstract contract InvariantGuardERC721 {
-    using InvariantGuardHelper for uint256;
-    using InvariantGuardHelper for uint256[];
+    using InvariantGuardHelper for *;
 
     function _getAddressArrayLength(address[] memory accountArray) private pure returns (uint256) {
         return accountArray.length;
