@@ -68,10 +68,6 @@ abstract contract InvariantGuardExternal {
         _;
         uint256[] memory afterBalanceArray = _getExtETHBalanceArray(accountArray);
         _processMinDecreaseExtETHBalance(AccountArrayInvariant(accountArray), beforeBalanceArray, afterBalanceArray, minDecreaseArray);
-    }   
-
-    function _getAddressArrayLength(address[] memory accountArray) private pure returns (uint256) {
-        return accountArray.length;
     }
 
     function _getExtETHBalance(address account) private view returns (uint256) {
@@ -79,7 +75,7 @@ abstract contract InvariantGuardExternal {
     }
 
     function _getExtETHBalanceArray(address[] memory accountArray) private view returns (uint256[] memory) {
-        uint256 length = _getAddressArrayLength(accountArray);
+        uint256 length = accountArray._getAddressArrayLength();
         length._revertIfArrayTooLarge();
         uint256[] memory balanceArray = new uint256[](length);
         for (uint256 i = 0 ; i < length ; ) {
