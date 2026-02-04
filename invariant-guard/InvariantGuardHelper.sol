@@ -33,23 +33,28 @@ struct ValuePerPosition {
     uint256 delta;
 }  
 
+// snapshot địa chỉ trước và sau thực thi
 struct AddressInvariant {
     address beforeOwner;
     address afterOwner;
 }
 
+// mảng địa chỉ cần kiểm tra bất biến
 struct AccountArrayInvariant {
     address[] accountArray;
 }
 
+// bí danh của mảng token ERC20 cần kiểm tra bất biến
 struct ERC20ArrayInvariant {
     IERC20[] tokenERC20ArrayInvariant;
 }
 
+// bí danh của mảng token ERC721 cần kiểm tra bất biến
 struct ERC721ArrayInvariant {
     IERC721[] tokenERC721ArrayInvariant;
 }
 
+// bí danh của mảng tokenId ERC721 cần kiểm tra bất biến
 struct ERC721TokenIdArray {
     uint256[] tokenIdERC721Array;
 }
@@ -81,33 +86,42 @@ error InvariantViolationStorage(ValuePerPosition[] storagePerPosition);
 /// @notice Transient storage invariant violation
 error InvariantViolationTransientStorage(ValuePerPosition[] transientStoragePerPosition);
 
+// Vi phạm bất biến số dư ETH ngoài hợp đồng
 error InvariantViolationExtETHBalanceArray(AccountArrayInvariant accountArrayInvariant, ValuePerPosition[] extETHBalancePerPosition);
 
+// Vi phạm bất biến số dư ERC20
 error InvariantViolationERC20BalanceArray(ERC20ArrayInvariant tokenERC20ArrayInvariant, AccountArrayInvariant accountArrayInvariant, ValuePerPosition[] ERC20BalancePerPosition);
 
+// Vi phạm bất biến số dư ERC721
 error InvariantViolationERC721BalanceArray(ERC721ArrayInvariant tokenERC721ArrayInvariant, AccountArrayInvariant accountArrayInvariant, ValuePerPosition[] ERC721BalancePerPosition);
 
+// Vi phạm bất biến chủ sở hữu dựa trên tokenId ERC721
 error InvariantViolationERC721OwnerArray(ERC721ArrayInvariant tokenERC721ArrayInvariant, ERC721TokenIdArray tokenIdERC721Array, AddressInvariant[] addressInvariantArray);
 
 library InvariantGuardHelper {
     uint256 internal constant MAX_PROTECTED_SLOTS  = 0xffff;
 
+    // tạo mảng trống uint256
     function _emptyArray(uint256 length) internal pure returns (uint256[] memory) {
         return new uint256[](length);
     }
     
+    // Lấy kích thước mảng bytes32
     function _getBytes32ArrayLength(bytes32[] memory bytes32Array) internal pure returns (uint256) {
         return bytes32Array.length;
     } 
 
+    // Lấy kích thước mảng uint256
     function _getUint256ArrayLength(uint256[] memory uint256Array) internal pure returns (uint256) {
         return uint256Array.length;
     }
 
+    // Lấy kích thước mảng address
     function _getAddressArrayLength(address[] memory accountArray) internal pure returns (uint256) {
         return accountArray.length;
     }
 
+    // hoàn nguyên nếu kích thước quá lớn
     function _revertIfArrayTooLarge(uint256 numPositions) internal pure {
         if (numPositions > MAX_PROTECTED_SLOTS) revert ArrayTooLarge(numPositions, MAX_PROTECTED_SLOTS);
     }  
@@ -177,6 +191,7 @@ library InvariantGuardHelper {
         return (violationCount, violations);
     }
     
+    // Xác minh địa chỉ trước và sau thực thi có bị thay đổi hay không, trả về giá trị violationCount > 0 nếu có
     function _validateAddressArray(address[] memory beforeOwnerArray, address[] memory afterOwnerArray) internal pure returns (uint256, AddressInvariant[] memory) {
         uint256 length = _getAddressArrayLength(afterOwnerArray);
         _revertIfArrayTooLarge(length);
