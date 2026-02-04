@@ -118,8 +118,8 @@ library InvariantGuardHelper {
     }
 
     // Lấy kích thước mảng address
-    function _getAddressArrayLength(address[] memory accountArray) internal pure returns (uint256) {
-        return accountArray.length;
+    function _getAddressArrayLength(address[] memory addressArray) internal pure returns (uint256) {
+        return addressArray.length;
     }
 
     // hoàn nguyên nếu kích thước quá lớn
