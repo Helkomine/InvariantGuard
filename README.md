@@ -178,5 +178,5 @@ function executeFrame(bytes calldata bytecode) public {
             if (is) assert(set.isAllowedTransientStorage[stack.slot()]);
         }
     }
-}
+} 
 ```
