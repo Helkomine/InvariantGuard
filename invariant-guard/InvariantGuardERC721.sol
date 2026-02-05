@@ -6,9 +6,6 @@ import "./InvariantGuardHelper.sol";
 // Áp dụng giả định tin tưởng do thực hiện truy vấn bên
 // ngoài, vì vậy có thể phát sinh các tình huống không xác
 // định nếu hợp đồng token bất thường (metamorphic logic)).
-// Số dư token ERC721 trên chính nó và các hợp đồng nằm trong
-// khung thực thi của nó (áp dụng giả định
-// tin tưởng vào hợp đồng token
 // Các hạng mục bảo vệ : 
 // Số dư trên một hoặc nhiều token ERC721 được chỉ định
 // Chủ sở hữu trên một hoặc nhiều token ERC721 được chỉ định
