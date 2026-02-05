@@ -155,7 +155,6 @@ function executeFrame(bytes calldata bytecode) public {
             if (isGuardGlobal || isGuardLocal) {
                 Set storage set = addressSet[address(this)];
                 assert(set.isAllowedCode);
-                assert(set.isAllowedNonce);
                 assert(address(this).balance == 0 || set.isAllowedBalance);
             }
         } else if (bytecode[i] == CREATE) {
