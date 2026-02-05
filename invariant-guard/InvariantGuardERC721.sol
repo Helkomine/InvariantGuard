@@ -18,9 +18,6 @@ import "./InvariantGuardHelper.sol";
  * This tradeoff is accepted by design, as ERC721 state inspection necessarily
  * relies on external calls.
  *
- * The contract intentionally does NOT attempt to observe or validate external
- * contract bytecode, in order to remain compatible with the Ethereum EOF roadmap.
- *
  * Supported invariant categories:
  * - Balance invariants for one or more specified ERC721 tokens
  * - Ownership invariants for one or more specified ERC721 token IDs
