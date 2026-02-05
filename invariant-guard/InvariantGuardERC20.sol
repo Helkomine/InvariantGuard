@@ -161,8 +161,6 @@ abstract contract InvariantGuardERC20 {
         if (violationCount > 0) revert InvariantViolationERC20BalanceArray(tokenERC20ArrayInvariant, accountArrayInvariant, violations); 
     }
 
-    // Remaining _process* functions intentionally follow the same pattern
-    // and are omitted from NatSpec repetition for brevity and consistency.
     function _processExactIncreaseERC20Balance(ERC20ArrayInvariant memory tokenERC20ArrayInvariant, AccountArrayInvariant memory accountArrayInvariant, uint256[] memory beforeBalanceArray, uint256[] memory afterBalanceArray, uint256[] memory exactIncreaseArray) private pure {
         (uint256 violationCount, ValuePerPosition[] memory violations) = beforeBalanceArray._validateDeltaArray(afterBalanceArray, exactIncreaseArray, DeltaConstraint.INCREASE_EXACT);
         if (violationCount > 0) revert InvariantViolationERC20BalanceArray(tokenERC20ArrayInvariant, accountArrayInvariant, violations); 
@@ -192,4 +190,7 @@ abstract contract InvariantGuardERC20 {
         (uint256 violationCount, ValuePerPosition[] memory violations) = beforeBalanceArray._validateDeltaArray(afterBalanceArray, minDecreaseArray, DeltaConstraint.DECREASE_MIN);
         if (violationCount > 0) revert InvariantViolationERC20BalanceArray(tokenERC20ArrayInvariant, accountArrayInvariant, violations); 
     }
+
+    // Remaining _process* functions intentionally follow the same pattern
+    // and are omitted from NatSpec repetition for brevity and consistency.
 }
