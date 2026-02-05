@@ -168,14 +168,14 @@ function executeFrame(bytes calldata bytecode) public {
             }    
         } else if (bytecode[i] == CALL) {
             if (isGuardGlobal || isGuardLocal) {
-                Set storage set = addressSet[stack.target()];
-                assert(set.isAllowedAddress);
+                Set storage targetSet = addressSet[stack.target()];
+                assert(targetSet.isAllowedAddress);
                 if (stack.callvalue()) assert(set.isAllowedBalance);
             }
         } else if (bytecode[i] == SSTORE) {
-            assert(set.isAllowedStorage[stack.slot()]);
+            if () assert(set.isAllowedStorage[stack.slot()]);
         } else if (bytecode[i] == TSTORE) {
-        assert(set.isAllowedTransientStorage[stack.slot()]);
+            if (is) assert(set.isAllowedTransientStorage[stack.slot()]);
         }
     }
 }
