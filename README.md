@@ -1,5 +1,7 @@
 # INVARIANT-GUARD
 
+@author Helkomine (@Helkomine)
+
 Giúp việc thực hiện DELEGATECALL trở nên an toàn hơn
 
 ## Bối cảnh
@@ -12,12 +14,45 @@ Kể từ đó cho đến nay giao thức vẫn chưa có bước cải tiến n
 
 Dựa trên ý tưởng đó, tác giả đã cung cấp một bản triển khai hoàn chỉnh, với tên gọi ban đầu là Safe-Delegatecall, tuy nhiên sau đó được đổi tên thành Invariant-Guard để hướng đến mục tiêu tham vọng hơn trong việc kiểm soát sự thay đổi trạng thái không chỉ riêng `DELEGATECALL` mà còn cho tất cả các mã lệnh có tiềm năng thay đổi trạng thái khác. 
 
-Đây là phiên bản triển khai công khai lần đầu tiên cho Invariant-Guard bằng Solidity, rất mong nhận được sự đánh giá từ cộng đồng. Ngoài ra tác giả còn đang sở hữu một EIP về vấn đề này nhằm cung cấp khả năng bảo vệ mang tính toàn cục, bạn có thể tham khảo tại đây : 
+Đây là phiên bản triển khai công khai lần đầu tiên cho Invariant-Guard bằng Solidity, rất mong nhận được sự đánh giá từ cộng đồng. Ngoài ra tác giả còn đang sở hữu một EIP về vấn đề này nhằm cung cấp khả năng bảo vệ mang tính toàn cục, bạn có thể tham khảo tại đây : (Note : EIP chưa được soạn thảo nên để trống)
 
 ##  Hướng dẫn sử dụng
 
-Hiện tại Invariant-Guard đang có bốn phiên bản là InvariantGuardInternal, InvariantGuardExternal, InvariantGuardERC20 và InvariantGuardERC721
+Hiện tại Invariant-Guard đang có bốn phiên bản là InvariantGuardInternal, InvariantGuardExternal, InvariantGuardERC20 và InvariantGuardERC721. Nếu bạn chỉ muốn nhận hướng dẫn sử dụng hoặc thích đọc code chi tiết, vui lòng nắm rõ các điểm thiết kế sau đây để tránh cảm thấy bối rối khi sử dụng / đọc 🙂.
 
-## Lời giải thích ngắn gọn về EIP
+### Các file khả dụng 
+
+Có tất cả năm file InvariantGuard, bốn trong số đó chứa mã chức năng với tên gọi như được nêu trên, file còn lại là một helper.
+
+### Giải thích cơ chế
+
+Thực hiện snapshot giá trị trước sau và sau đó là hậu kiểm (ý tưởng tương tự với thiết kế flash loan)
+
+### Phân loại bất biến
+
+Dựa trên đánh giá khoảng chênh lệch ta chia bất biến ra thành hai nhóm:
+
+- Bất biến tuyệt đối : Giá trị trước sau phải bằng nhau
+
+- Bất biến dựa trên ngưỡng : Giá trị trước sau phải theo một cấu hình ngưỡng đã được thiết lập
+
+Dựa trên các loại chênh lệch ta chia ra thành tám nhóm:
+
+
+
+## Các vấn đề an ninh
+
+Lưu ý quan trọng : Mã chưa được kiểm toán do vậy không được dùng trong sản xuất.
+
+### Hiểu về giới hạn bảo vệ
 
 Các nhà phát triển phải nắm rõ những hạn chế cố hữu của module tích hợp này và dự phóng an toàn cho những vị trí mà module này không bảo vệ được. Chính vì những hạn chế như vậy mà tác giả khuyến nghị chỉ sử dụng chúng để bảo vệ những vị trí trọng yếu, chằng hạn như con trỏ proxy, chủ sở hữu, hoặc những vị trí được tuyên bố là bất biến dựa trên đặc tả ban đầu.
+
+## Đề xuất EIP
+
+Dựa trên bản triển khai Invariant Guard bằng Solidity, tác giả đã có định hướng rõ ràng về những vị trí cần được bảo vệ bất biến, trong đó Invariant Guard Solidity đã quản lý tốt được vòng trong (các vị trí được lựa chọn), điểm hở duy nhất của thiết kế này là vòng ngoài (toàn bộ vị trí không được chỉ định, chiếm một số lượng cực lớn và không dễ để chỉ định hết). Công việc này chỉ có thể được giải quyết từ cấp độ giao thức, có thể là cung cấp một mã lệnh mới hoặc một hợp đồng biên dịch trước để "rào" tất cả
+các vị trí ngoài phạm vi chỉ định. Do vậy tác giả quyết định đề xuất một EIP nhằm cung cấp bản vá vững chãi, qua đó loại bỏ hoàn toàn các cuộc tấn công từ phía vòng ngoài đưa sự an toàn trạng thái lên mức tuyệt đối. Bản thảo chi tiết hiện ở đây : (Note : Đang soạn bản thảo nên chưa có link)
+
+## Ghi chú
+
+Nếu bạn phát hiện code có bất kỳ lỗi nào trong code : Lỗi logic, lỗi đặt tên, ... vui lòng gửi một pull request. Cảm ơn rất nhiều.
