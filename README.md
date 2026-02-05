@@ -148,22 +148,33 @@ function addAllowedSet(AddressSet[] calldata addressSet) public {
     }
 }
 function executeFrame(bytes calldata bytecode) public {
-    Set storage set = addressSet[address(this)];
+    bool isGuardGlobal;
+    bool isGuardLocal;    
     for (uint256 i = 0 ; i < bytecode.length ; ++i) {
         if (bytecode[i] == SELFDESTRUCT) {           
-            assert(set.isAllowedAddress);
-            assert(set.isAllowedCode);
-            assert(address(this).balance == 0 || set.isAllowedBalance);
+            if (isGuardGlobal || isGuardLocal) {
+                Set storage set = addressSet[address(this)];
+                assert(set.isAllowedCode);
+                assert(set.isAllowedNonce);
+                assert(address(this).balance == 0 || set.isAllowedBalance);
+            }
         } else if (bytecode[i] == CREATE) {
-            assert(set.isAllowedAddress);
-            assert(set.isAllowedNonce);
+            if (isGuardGlobal || isGuardLocal) {
+                assert(set.isAllowedAddress);
+                assert(set.isAllowedNonce);
+            }
         } else if (bytecode[i] == CREATE2) {
-            assert(set.isAllowedAddress);
-            assert(set.isAllowedNonce);
+                assert(set.isAllowedAddress);
+                assert(set.isAllowedNonce);
+        
         } else if (bytecode[i] == CALL) {
             assert(set.isAllowedAddress);
-            assert(set.isAllowedBalance);
+            if (stack.callvalue()) assert(set.isAllowedBalance);
         }
+    } else if (bytecode[i] == SSTORE) {
+        assert(set.isAllowedStorage[stack.slot()]);
+    } else if (bytecode[i] == TSTORE) {
+        assert(set.isAllowedTransientStorage[stack.slot()]);
     }
 }
 ```
