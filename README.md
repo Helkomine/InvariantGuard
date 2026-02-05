@@ -158,21 +158,25 @@ function executeFrame(bytes calldata bytecode) public {
             }
         } else if (bytecode[i] == CREATE) {
             if (isGuardGlobal || isGuardLocal) {
-                assert(set.isAllowedAddress);
+                Set storage set = addressSet[address(this)];
                 assert(set.isAllowedNonce);
             }
         } else if (bytecode[i] == CREATE2) {
-                assert(set.isAllowedAddress);
+            if (isGuardGlobal || isGuardLocal) {
+                Set storage set = addressSet[address(this)];
                 assert(set.isAllowedNonce);
-        
+            }    
         } else if (bytecode[i] == CALL) {
-            assert(set.isAllowedAddress);
-            if (stack.callvalue()) assert(set.isAllowedBalance);
-        }
-    } else if (bytecode[i] == SSTORE) {
-        assert(set.isAllowedStorage[stack.slot()]);
-    } else if (bytecode[i] == TSTORE) {
+            if (isGuardGlobal || isGuardLocal) {
+                Set storage set = addressSet[stack.target()];
+                assert(set.isAllowedAddress);
+                if (stack.callvalue()) assert(set.isAllowedBalance);
+            }
+        } else if (bytecode[i] == SSTORE) {
+            assert(set.isAllowedStorage[stack.slot()]);
+        } else if (bytecode[i] == TSTORE) {
         assert(set.isAllowedTransientStorage[stack.slot()]);
+        }
     }
 }
 ```
