@@ -227,4 +227,7 @@ abstract contract InvariantGuardERC721 {
         }
         return ownerArray;
     }
+
+    // Remaining _process* functions intentionally follow the same pattern
+    // and are omitted from NatSpec repetition for brevity and consistency.
 }
