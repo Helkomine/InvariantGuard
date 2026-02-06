@@ -335,3 +335,194 @@ MutableSetList = List[MutableSet]
    
 Lý do
 Tính đến thời điểm hiện tại, đã có ít nhất một giải pháp kiểm soát sự thay đổi trạng thái 
+
+
+
+```
+// SPDX-License-Identifier: CC0-1.0
+pragma solidity ^0.8.0;
+enum CallOptions {Call, DelegateCall, StaticCall}
+struct FacetCall {
+    address facetOrHook;
+    uint64 unlockDeadline;
+    CallOptions callOption;
+    bool specifyCallConfiguration;
+}
+struct UserStorage {
+    uint64 nonce;
+    uint64 unlockDeadline;
+    uint8 threshold;
+    bool allowSelfCallViaProxy;
+}
+library ExtractData {
+    bytes1 internal constant FLAG_ALLOW_REVERT_ON_COMMAND = 0x80;
+    bytes1 internal constant COMMAND_TYPE_MASK = 0x7f;
+    bytes4 internal constant FLAG_ALLOW_REVERT_ON_SELECTOR = 0x80_00_00_00;
+    bytes4 internal constant SELECTOR_TYPE_MASK = 0x7f_ff_ff_ff;
+    
+    function _getFlagAndCommand(bytes1 commandType) internal pure returns (bool revertIfExecCommandFailed, bytes1 command) {
+        revertIfExecCommandFailed = commandType & FLAG_ALLOW_REVERT_ON_COMMAND == 0;
+        command = commandType & COMMAND_TYPE_MASK;
+    }
+
+    function _getFlagAndSelector(bytes4 selectorType) internal pure returns (bool revertIfExecSelectorFailed, bytes4 selector) {
+        revertIfExecSelectorFailed = selectorType & FLAG_ALLOW_REVERT_ON_SELECTOR == 0;
+        selector = selectorType & SELECTOR_TYPE_MASK;
+    }
+}
+interface IERCXXXXSCA {
+    error LengthMismatch();
+    error InvalidSignature();
+    error TooManyCommands();
+    error TooManySelectors();
+    error EntryPointNotMarked();
+    error FacetIsZeroAddress();
+    error InvalidOptionCall(CallOptions callOption);
+    error ExecutionContractsFailed(uint256 selectorIndex, bytes output);
+    error ExecutionCommandsFailed(uint256 commandIndex, bytes output);
+    error ExecutionReceiveFailed(bool status, bytes output);
+    error ExecutionFallbackFailed(bool status, bytes output);
+
+    event NotStatic();
+    event Receive(address indexed from, uint256 indexed value);
+    event Fallback(address indexed from, uint256 indexed value, bytes data);
+    /// @notice Thrown when a required command has failed
+    error ExecutionFailed(uint256 commandIndex, bytes message);
+    function execute(bytes calldata commands, bytes[] calldata inputs) external payable returns (bytes[] memory outputs);
+}
+
+contract ERCXXXXSCA is IERCXXXXSCA {
+    using ExtractData for *;
+    bool transient unlocked;
+    //STORAGE
+    UserStorage internal userStorage;
+    mapping(bytes4 => FacetCall) internal facetsAndHooks;
+    mapping(uint8 => address) internal signers;
+    uint8 internal numSigners;
+    // 0 -> 3 : TRANSIENT STORAGE
+    bytes32 transient handleSelectorReceive;  
+    bytes32 transient handleSelectorFallback;
+
+    modifier checkSender(bytes calldata commands, bytes[] calldata inputs) {
+        // Kiểm tra caller
+        if (msg.sender != address(this)) {
+            // Kiểm tra unlock
+            if (!unlocked) {
+                if (isNotStatic()) {
+                    if (!verifySignature(getSignature(commands, inputs))) revert InvalidSignature();
+                    unlocked = true;
+                }
+            }
+        }
+        _;
+    }
+
+    function execute(bytes calldata commands, bytes[] calldata inputs) external payable checkSender(commands, inputs) returns (bytes[] memory outputs) {
+        bool success;
+        bytes memory output;
+        uint256 numCommands = commands.length;
+        if (inputs.length != numCommands) revert LengthMismatch();
+        outputs = new bytes[](numCommands);
+
+        // loop through all given commands, execute them and pass along outputs as defined
+        for (uint256 commandIndex = 0; commandIndex < numCommands; commandIndex++) {
+            bytes1 command = commands[commandIndex];
+
+            bytes calldata input = inputs[commandIndex];
+
+            (success, output) = dispatch(command, input);
+
+            if (!success && successRequired(command)) {
+                revert ExecutionFailed({commandIndex: commandIndex, message: output});
+            }
+
+            outputs[commandIndex] = output;
+        }
+    }
+
+    function _executeReceive() internal {}
+
+    function _executeFallback() internal {}
+
+    function _isStatic() internal {
+        (bool success, ) = address(this).call{gas : 3000}("");
+        require(success);
+    }
+    
+    function _willFallback(FacetCall storage facet) internal returns (bool success, bytes memory output) {      
+        if (facet.facetOrHook != address(0)) revert FacetIsZeroAddress();
+
+        if (facet.callOption == CallOptions.Call) {
+            // khóa entry point để ngăn tái nhập
+            _lockEntryPoint();
+            (success, output) = facet.facetOrHook.call(msg.data);
+            // mở khóa entry point
+            _unlockEntryPoint();
+        } else if (facet.callOption == CallOptions.DelegateCall) {
+            (success, output) = facet.facetOrHook.delegatecall(msg.data);
+        } else if (facet.callOption == CallOptions.StaticCall) {
+            // Không khóa entry point trên staticcall do lệnh gọi này không làm thay đổi trạng thái
+            (success, output) = facet.facetOrHook.staticcall(msg.data);
+        } else {
+            revert InvalidOptionCall(facet.callOption);
+        }
+    }
+
+    receive() external payable {
+        (bool revertIfExecSelectorFailed, bytes4 selectorReceive) = bytes4(handleSelectorReceive)._getFlagAndSelector();
+        if (selectorReceive != 0x0) {           
+            FacetCall storage facet = facetsAndHooks[selectorReceive];
+            (bool success, bytes memory output) = _willFallback(facet);            
+            if (!success && revertIfExecSelectorFailed) revert ExecutionReceiveFailed(success, output);
+            assembly {
+                return(add(output, 0x20), mload(output))
+            }
+        } else {
+            _executeReceive();
+        }     
+    }
+
+    fallback() external payable {
+        (bool revertIfExecSelectorFailed, bytes4 selectorFallback) = bytes4(handleSelectorFallback)._getFlagAndSelector();
+        if (selectorFallback != 0x0) {
+            FacetCall storage facet = facetsAndHooks[selectorFallback];
+            (bool success, bytes memory output) = _willFallback(facet);
+            if (!success && revertIfExecSelectorFailed) revert ExecutionFallbackFailed(success, output);
+            assembly {
+                return(add(output, 0x20), mload(output))
+            }
+        } else {
+            _executeFallback();
+        }
+    }
+
+    function isNotStatic() private returns (bool result) {
+        (result, ) = address(this).call{gas : 5000}("");
+    }
+
+    function verifySignature(bytes calldata signature) private returns (bool) {}
+
+    function getSignature(bytes calldata commands, bytes[] calldata inputs) private pure returns (bytes calldata signature) {
+        require(commands.length > 0 && inputs.length > 0);
+        require(commands[0] == 0x01);
+        signature = inputs[0];
+    }
+
+    function dispatch(bytes1 commandType, bytes calldata inputs) internal returns (bool success, bytes memory output) {
+        //uint256 command = uint8(commandType & 0x7f);
+        //success = true;
+    }
+
+    function successRequired(bytes1 command) internal pure returns (bool) {
+        return command & 0x80 == 0;
+    }
+
+    function _lockEntryPoint() internal {
+        unlocked = false;
+    }
+
+    function _unlockEntryPoint() internal {
+        unlocked = true;
+    }
+}
+```
