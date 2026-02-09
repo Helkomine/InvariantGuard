@@ -1,6 +1,29 @@
 // SPDX-License-Identifier: CC0-1.0
 pragma solidity ^0.8.20;
 import "./InvariantGuardHelper.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+
+/**
+ * @notice Wrapper for an array of ERC721 tokens subject to invariant checks
+ */
+struct ERC721ArrayInvariant {
+    IERC721[] tokenERC721ArrayInvariant;
+}
+
+/**
+ * @notice Wrapper for an array of ERC721 token IDs subject to invariant checks
+ */
+struct ERC721TokenIdArray {
+    uint256[] tokenIdERC721Array;
+}
+
+/// @notice ERC721 balance invariant violation
+/// @custom:invariant erc721.balance: ERC721 balances must satisfy the delta constraint
+error InvariantViolationERC721BalanceArray(ERC721ArrayInvariant tokenERC721ArrayInvariant, AccountArrayInvariant accountArrayInvariant, ValuePerPosition[] ERC721BalancePerPosition);
+
+/// @notice ERC721 ownership invariant violation
+/// @custom:invariant erc721.owner: ownership of specified tokenIds must remain unchanged
+error InvariantViolationERC721OwnerArray(ERC721ArrayInvariant tokenERC721ArrayInvariant, ERC721TokenIdArray tokenIdERC721Array, AddressInvariant[] addressInvariantArray);
 
 /**
  * @title InvariantGuardERC721
