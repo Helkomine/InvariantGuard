@@ -110,151 +110,6 @@ If you discover any issues in the code—logic errors, naming problems, or other
 
 Thank you very much.
 
-## Reference Implementation
-
-```
-// SPDX-License-Identifier: CC0-1.0
-pragma solidity ^0.8.20;
-contract ReferenceImplementation {
-    struct AddressSet {     
-        address object;
-        bool isAllowedAddress;
-        bool isAllowedCode;
-        bool isAllowedNonce;
-        bool isAllowedBalance;
-        bytes32[] allowedStorageList;
-        bytes32[] allowedTransientStorageList;
-        bytes32[] commitList;
-    }
-    struct Set {
-        bool isAllowedAddress;
-        bool isAllowedCode;
-        bool isAllowedNonce;
-        bool isAllowedBalance;
-        mapping(bytes32 => bool) isAllowedStorage;
-        mapping(bytes32 => bool) isAllowedTransientStorage;
-        mapping(bytes32 => bool) isAllowedCommit;    
-    }
-    mapping(address => Set) allowedSet;
-
-    function addAllowedSet(AddressSet[] calldata addressSet) internal {
-        for (uint256 i = 0 ; i < addressSet.length ; ++i) {
-            Set storage set = allowedSet[addressSet[i].object];
-            set.isAllowedAddress = addressSet[i].isAllowedAddress;
-            set.isAllowedCode = addressSet[i].isAllowedCode;
-            set.isAllowedNonce = addressSet[i].isAllowedNonce;
-            set.isAllowedBalance = addressSet[i].isAllowedBalance;
-            for (uint256 j = 0 ; j < addressSet[i].allowedStorageList.length ; ++j) {
-                set.isAllowedStorage[addressSet[i].allowedStorageList[j]] = true;
-            }
-            for (uint256 k = 0 ; k < addressSet[i].allowedTransientStorageList.length ; ++k) {
-                set.isAllowedTransientStorage[addressSet[i].allowedTransientStorageList[k]] = true;
-            }
-            for (uint256 l = 0 ; l < addressSet[i].allowedTransientStorageList.length ; ++l) {
-                set.isAllowedCommit[addressSet[i].commitList[l]] = true;
-            }
-        }
-    }
-
-    function removeAllowedSet(AddressSet[] calldata addressSet) internal {
-        for (uint256 i = 0 ; i < addressSet.length ; ++i) {
-            Set storage set = allowedSet[addressSet[i].object];
-            set.isAllowedAddress = false;
-            set.isAllowedCode = false;
-            set.isAllowedNonce = false;
-            set.isAllowedBalance = false;
-            for (uint256 j = 0 ; j < addressSet[i].allowedStorageList.length ; ++j) {
-                set.isAllowedStorage[addressSet[i].allowedStorageList[j]] = false;
-            }
-            for (uint256 k = 0 ; k < addressSet[i].allowedTransientStorageList.length ; ++k) {
-                set.isAllowedTransientStorage[addressSet[i].allowedTransientStorageList[k]] = false;
-            }
-            for (uint256 l = 0 ; l < addressSet[i].allowedTransientStorageList.length ; ++l) {
-                set.isAllowedCommit[addressSet[i].commitList[l]] = false;
-            }
-        }
-    }
-
-    function concatAllowedSet(AddressSet[] calldata currentAddressSet, AddressSet[] calldata addAddressSet) internal pure returns (AddressSet[] memory newAddressSet) {
-        newAddressSet = new AddressSet[](currentAddressSet.length + addAddressSet.length);
-        for (uint256 i = 0 ; i < newAddressSet.length ; ++i) {
-            /*
-            Set storage set = allowedSet[addressSet[i].object];
-            set.isAllowedAddress = false;
-            set.isAllowedCode = false;
-            set.isAllowedNonce = false;
-            set.isAllowedBalance = false;
-            for (uint256 j = 0 ; j < addressSet[i].allowedStorageList.length ; ++j) {
-                set.isAllowedStorage[addressSet[i].allowedStorageList[j]] = false;
-            }
-            for (uint256 k = 0 ; k < addressSet[i].allowedTransientStorageList.length ; ++k) {
-                set.isAllowedTransientStorage[addressSet[i].allowedTransientStorageList[k]] = false;
-            }
-            for (uint256 l = 0 ; l < addressSet[i].allowedTransientStorageList.length ; ++l) {
-                set.isAllowedCommit[addressSet[i].commitList[l]] = false;
-            }
-            */
-        }
-    }
-
-    function cutAllowedSet(AddressSet[] calldata currentAddressSet, AddressSet[] calldata removeAddressSet) internal pure returns (AddressSet[] memory newAddressSet) {
-        newAddressSet = new AddressSet[](currentAddressSet.length + removeAddressSet.length);
-        for (uint256 i = 0 ; i < newAddressSet.length ; ++i) {
-            /*
-            Set storage set = allowedSet[addressSet[i].object];
-            set.isAllowedAddress = false;
-            set.isAllowedCode = false;
-            set.isAllowedNonce = false;
-            set.isAllowedBalance = false;
-            for (uint256 j = 0 ; j < addressSet[i].allowedStorageList.length ; ++j) {
-                set.isAllowedStorage[addressSet[i].allowedStorageList[j]] = false;
-            }
-            for (uint256 k = 0 ; k < addressSet[i].allowedTransientStorageList.length ; ++k) {
-                set.isAllowedTransientStorage[addressSet[i].allowedTransientStorageList[k]] = false;
-            }
-            for (uint256 l = 0 ; l < addressSet[i].allowedTransientStorageList.length ; ++l) {
-                set.isAllowedCommit[addressSet[i].commitList[l]] = false;
-            }
-            */
-        }
-    }
-    /*
-    function executeFrame(bytes calldata bytecode) public {
-        bool isPrevFrameGuard;
-        bool isFrameGuard;   
-        Set storage set = addressSet[address(this)]; 
-        for (uint256 i = 0 ; i < bytecode.length ; ++i) {
-            if (bytecode[i] == SELFDESTRUCT) {           
-                if (isPrevFrameGuard || isFrameGuard) {
-                    
-                assert(set.isAllowedCode);                
-            }
-        } else if (bytecode[i] == CREATE) {
-            if (isPrevFrameGuard || isFrameGuard) {
-                Set storage set = addressSet[address(this)];
-                assert(set.isAllowedNonce);
-            }
-        } else if (bytecode[i] == CREATE2) {
-            if (isPrevFrameGuard || isFrameGuard) {
-                Set storage set = addressSet[address(this)];
-                assert(set.isAllowedNonce);
-            }    
-        } else if (bytecode[i] == CALL) {
-            if (isPrevFrameGuard || isFrameGuard) {
-                Set storage targetSet = addressSet[stack.target()];
-                assert(targetSet.isAllowedAddress);
-                if (stack.callvalue()) assert(set.isAllowedBalance);
-            }
-        } else if (bytecode[i] == SSTORE) {
-            if (isPrevFrameGuard || isFrameGuard) assert(set.isAllowedStorage[stack.slot()]);
-        } else if (bytecode[i] == TSTORE) {
-            if (isPrevFrameGuard || isFrameGuard) assert(set.isAllowedTransientStorage[stack.slot()]);
-        }
-    }   
-    */
-}
-```
-
 ## Bản thảo EIP
 
 EIP-XXXX : Thêm mã lệnh bảo vệ bất biến bố cục
@@ -277,11 +132,11 @@ Tính đến thời điểm hiện tại, đã có ít nhất một giải pháp
 
 ### Hằng số
 
- BASE_OPCODE_COST : 3
+BASE_OPCODE_COST : 3
  
 ### Mã lệnh
  
-`MUTABLE`
+`MUTABLE (0x2f)`
 Stack input
    `offset` : Vị trí bắt đầu của dữ liệu cần lấy trên bộ nhớ
    `length` : Kích thước dữ liệu tối đa được truy cập trên bộ nhớ
@@ -301,14 +156,31 @@ AllowedStorage = bytes32   # Storage slot key
 AllowedTransientStorage = bytes32   # Transient Storage slot key
 AllowedCommit = bytes32   # Băm lời gọi cho phép thực thi
 
+Option = {
+    0x00 : Code,
+    0x01 : Nonce,
+    0x02 : Balance,
+    0x03 : Storage,
+    0x04 : TransientStorage
+}
+
+Payload = {
+    0x00 : Empty,
+    0x01 : Empty,
+    0x02 : Empty,
+    0x03 : Storage,
+    0x04 : TransientStorage
+}
+
+PolicyEntry = [
+    Option,   #
+    Active,
+    Payload
+]
+
 MutableSet = [
     Address,
-    AllowedCode,
-    AllowedNonce,
-    AllowedBalance,
-    List[AllowedCommit],
-    List[AllowedStorage],
-    List[AllowedTransientStorage]
+    List[PolicyEntry]
 ]
 
 MutableSetList = List[MutableSet]
