@@ -167,34 +167,35 @@ The `MUTABLE` opcode interprets RLP-encoded data located in the caller’s memor
 #### Option values
 
 `Option` is a `uint8` value with the following meanings:
-`0x00`: Code
-`0x01`: Nonce
-`0x02`: Balance
-`0x03`: Storage
-`0x04`: TransientStorage
+- `0x00`: Code
+- `0x01`: Nonce
+- `0x02`: Balance
+- `0x03`: Storage
+- `0x04`: TransientStorage
 
 #### Payload interpretation
 
 The `Payload` field SHALL be interpreted according to the associated Option value:
-For `0x00`, `0x01`, `0x02`: the payload MUST be empty.
-For `0x03`: the payload MUST be an RLP list of `AllowedStorage` values.
-For `0x04`: the payload MUST be an RLP list of `AllowedTransientStorage` values.
+
+- For `0x00`, `0x01`, `0x02`: the payload MUST be empty.
+- For `0x03`: the payload MUST be an RLP list of `AllowedStorage` values.
+- For `0x04`: the payload MUST be an RLP list of `AllowedTransientStorage` values.
 
 #### Structures
 
-• `PolicyEntry`:
+- `PolicyEntry`:
 
 ```
 [ Option, Allowed, Payload ]
 ```
 
-• `MutableSet`:
+- `MutableSet`:
 
 ```
 [ Address, List[PolicyEntry] ]
 ```
 
-• `MutableSetList`:
+- `MutableSetList`:
 
 ```
 List[MutableSet]
@@ -212,8 +213,9 @@ At the start of transaction execution, `guardOrigin` SHALL be initialized to `NO
 #### Propagation of mutation restrictions 
 
 When an execution frame spawns a child frame via `CALL`, `DELEGATECALL`, `CALLCODE`, `STATICCALL`, `CREATE`, or `CREATE2`, both `guardOrigin` and the effective `MutableSetList` SHALL be propagated as follows:
-If `guardOrigin` is `NONE`, the child frame SHALL receive `guardOrigin = NONE`.
-If `guardOrigin` is `LOCAL` or `INHERITED`, the child frame SHALL receive `guardOrigin = INHERITED`.
+
+- If `guardOrigin` is `NONE`, the child frame SHALL receive `guardOrigin = NONE`.
+- If `guardOrigin` is `LOCAL` or `INHERITED`, the child frame SHALL receive `guardOrigin = INHERITED`.
 
 #### Execution of the MUTABLE opcode
 
@@ -228,15 +230,15 @@ If `guardOrigin` is `INHERITED`, the effective `MutableSetList` SHALL be compute
 While executing an execution frame where `guardOrigin` is `LOCAL` or `INHERITED`, any instruction that attempts to mutate state outside the permitted scope defined by the effective `MutableSetList` SHALL result in an exceptional halt equivalent to an out-of-gas condition.
 The following operations SHALL always result in an exceptional halt when `guardOrigin` is not `NONE`:
 
-• Execution of `CALLCODE`.
-• Execution of `SELFDESTRUCT`.
+- Execution of `CALLCODE`.
+- Execution of `SELFDESTRUCT`.
 
 The following operations SHALL result in an exceptional halt unless explicitly permitted by the effective `MutableSetList`:
 
-• `CALL` with a non-zero value, unless mutation of Balance is permitted for both the caller address and the target address.
-• `CREATE` or `CREATE2`, unless mutation of Code and Nonce is permitted for the created address, and mutation of Nonce is permitted for the caller address. If a non-zero value is transferred, mutation of Balance MUST also be permitted for both addresses.
-• `SSTORE`, unless mutation of Storage is permitted for the executing address and the target storage slot is explicitly allowed.
-• `TSTORE`, unless mutation of TransientStorage is permitted for the executing address and the target transient storage slot is explicitly allowed.
+- `CALL` with a non-zero value, unless mutation of Balance is permitted for both the caller address and the target address.
+- `CREATE` or `CREATE2`, unless mutation of Code and Nonce is permitted for the created address, and mutation of Nonce is permitted for the caller address. If a non-zero value is transferred, mutation of Balance MUST also be permitted for both addresses.
+- `SSTORE`, unless mutation of Storage is permitted for the executing address and the target storage slot is explicitly allowed.
+- `TSTORE`, unless mutation of TransientStorage is permitted for the executing address and the target transient storage slot is explicitly allowed.
 
 Any future opcode or protocol change that introduces new forms of state mutation MUST define its interaction with `MUTABLE` in a manner consistent with the enforcement rules defined herein.
 
@@ -244,17 +246,17 @@ Any future opcode or protocol change that introduces new forms of state mutation
 
 Execution of `MUTABLE` SHALL result in an exceptional halt if any of the following occur:
 
-• Out-of-gas.
-• Insufficient stack items.
-• Any attempt to decode RLP data that would require reading beyond length bytes.
-• The RLP payload does not conform to the MutableSetList structure defined in this specification.
+- Out-of-gas.
+- Insufficient stack items.
+- Any attempt to decode RLP data that would require reading beyond length bytes.
+- The RLP payload does not conform to the MutableSetList structure defined in this specification.
 
 ### Gas cost
 
 The gas cost of the MUTABLE opcode consists of:
 
-• The base opcode cost `BASE_OPCODE_COST`.
-• Memory expansion costs, calculated according to existing EVM rules.
-• A per-chunk (32-byte) cost proportional to length, to account for RLP decoding overhead.
+- The base opcode cost `BASE_OPCODE_COST`.
+- Memory expansion costs, calculated according to existing EVM rules.
+- A per-chunk (32-byte) cost proportional to length, to account for RLP decoding overhead.
    
 ## Lý do
