@@ -196,6 +196,15 @@ MutableSet = [
 
 # Mảng MutableSet
 MutableSetList = List[MutableSet]
+
+## Note : Mã giả Solidity nhằm mô tả hành vi, vui lòng thay thế vị trí có sử dụng nó bằng văn bản đặc tả thực tế và sau đó xóa mã giả đi.
+struct PolicyEntry {
+  uint8 option;
+  bool active;
+  mapping(bytes32 => bool) allowedSlot;
+}
+mapping(address => PolicyEntry[]) lookup;
+lookup[]
 ```
 
 ### Hành vi
@@ -214,6 +223,7 @@ Nếu khung thực thi hiện tại chuyển tiếp giao dịch xuống khung th
 #### Thực thi mã lệnh MUTABLE trong khung hiện tại
 
 Nếu đối số `isGuard` được đặt là false, hãy đặt lại guardOrigin là NONE chỉ khi guardOrigin là NONE hoặc LOCAL.
+
 Nếu đối số `isGuard` được đặt là true:
 
 - Nếu guardOrigin là NONE hoặc LOCAL hãy đặt MutableSetList là phần dữ liệu được giải mã trên bộ nhớ đã cho.
@@ -221,13 +231,14 @@ Nếu đối số `isGuard` được đặt là true:
 
 #### Thực thi bất biến trên mã lệnh thay đổi trạng thái
 
-Nếu guardOrigin là LOCAL hoặc INHERITED thì các điều khoản hạn chế sẽ được áp dụng trên các mã lệnh như sau:
+Trên khung thực thi hiện tại, nếu guardOrigin là LOCAL hoặc INHERITED thì các hành động sau đây PHẢI bị hoàn tác tương tự như khi gặp lỗi hết gas:
 
+Note : Thay bằng ngôn ngữ đặc tả cho mã giả này
+- Slot mục tiêu của SSTORE là lookup[address(this)].allowedSlot[targetSlot] == false.
+- Slot mục tiêu của TSTORE là lookup[address(this)].allowedSlot[targetSlot] == false.
 - Nếu khung thực thi gọi SELFDESTRUCT, PHẢI hoàn tác nếu .
 - Nếu khung thực thi gọi CREATE hoặc CREATE2, PHẢI hoàn tác nếu isAllowedNonce là false.
 - Nếu khung thực thi gọi CALL, PHẢI hoàn tác nếu isAllowedBalance là false.
-- Nếu khung thực thi sử dụng SSTORE, PHẢI hoàn tác nếu slot được chỉ định là false.
-- Nếu khung thực thi sử dụng TSTORE, PHẢI hoàn tác nếu slot được chỉ định là false.
 
 Lưu ý rằng các mã lệnh mới có tạo ra sự thay đổi trạng thái hoặc các loại trạng thái mới được thêm vào trong tương lai PHẢI điều chỉnh hành vi sao cho phù hợp với thông số kỹ thuật của mã lệnh này để tránh các vấn đề tương thích ngược.
 
@@ -235,11 +246,11 @@ Lưu ý rằng các mã lệnh mới có tạo ra sự thay đổi trạng thái
 
 - Hết gas
 - Không đủ toán hạng trên ngăn xếp
-- Kích thước tự mô tả của từng phần tử RLP trên bộ nhớ vượt quá giá trị `length`. 
+- Kích thước tự mô tả của từng phần tử RLP trên bộ nhớ vượt quá giá trị `length` đã cho. 
 
 ### Chi phí gas
 
-Chi phí gas cho mã lệnh `MUTABLE` bao gồm phí cơ bản `BASE_OPCODE_COST`, ngoài ra còn có chi phí mở rộng bộ nhớ theo quy tắc tính phí hiện hành và chi phí tính trên mỗi chunk (32-byte) tương ứng với `length` được chỉ định nhằm hỗ trợ phân tích rlp.
+Chi phí gas cho mã lệnh `MUTABLE` bao gồm phí cơ bản `BASE_OPCODE_COST`, ngoài ra còn có chi phí mở rộng bộ nhớ theo quy tắc tính phí EVM hiện hành và chi phí tính trên mỗi chunk (32-byte) tương ứng với `length` được chỉ định nhằm hỗ trợ phân tích rlp.
    
 ## Lý do
 
