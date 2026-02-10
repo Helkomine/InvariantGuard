@@ -227,6 +227,8 @@ Nếu đối số `isGuard` được đặt là true:
 - Nếu guardOrigin là NONE hoặc LOCAL hãy đặt MutableSetList là phần dữ liệu được giải mã trên bộ nhớ đã cho.
 - Nếu guardOrigin là INHERITED, hãy đặt MutableSetList là phần giao của phần dữ liệu được giải mã trên bộ nhớ đã cho và MutableSetList kế thừa từ khung thực thi cha.
 
+Lưu ý rằng chỉ có Option cuối cùng theo thứ tự RLP mới được áp dụng.
+
 #### Thực thi bất biến trên mã lệnh thay đổi trạng thái
 
 Trên khung thực thi hiện tại, nếu guardOrigin là LOCAL hoặc INHERITED thì các hành động sau đây PHẢI bị hoàn tác tương tự như khi gặp lỗi hết gas:
