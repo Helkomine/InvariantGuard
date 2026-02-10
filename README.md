@@ -196,13 +196,6 @@ MutableSet = [
 
 # Mảng MutableSet
 MutableSetList = List[MutableSet]
-
-## Note : Mã giả Solidity nhằm mô tả hành vi, vui lòng thay thế vị trí có sử dụng nó bằng văn bản đặc tả thực tế và sau đó xóa mã giả đi.
-struct PolicyEntry {
-  bool active;
-  mapping(bytes32 => bool) allowedSlot;
-}
-mapping(address => mapping(uint8 option => PolicyEntry)) lookup;
 ```
 
 ### Hành vi
@@ -220,34 +213,30 @@ Nếu khung thực thi hiện tại chuyển tiếp giao dịch xuống khung th
 
 #### Thực thi mã lệnh MUTABLE trong khung hiện tại
 
-Nếu đối số `isGuard` được đặt là false, hãy đặt lại guardOrigin là NONE chỉ khi guardOrigin là NONE hoặc LOCAL.
-
-Nếu đối số `isGuard` được đặt là true:
-
-- Nếu guardOrigin là NONE hoặc LOCAL hãy đặt MutableSetList là phần dữ liệu được giải mã trên bộ nhớ đã cho.
-- Nếu guardOrigin là INHERITED, hãy đặt MutableSetList là phần giao của phần dữ liệu được giải mã trên bộ nhớ đã cho và MutableSetList kế thừa từ khung thực thi cha.
-
-Lưu ý rằng chỉ có Option cuối cùng theo thứ tự RLP mới được áp dụng.
+When executing the MUTABLE opcode, the EVM SHALL decode the RLP-encoded MutableSetList from memory starting at offset, reading at most length bytes.
+If isGuard is set to false, the EVM SHALL set guardOrigin to NONE only if the current value of guardOrigin is NONE or LOCAL. If guardOrigin is INHERITED, this operation SHALL have no effect.
+If isGuard is set to true:
+If guardOrigin is NONE or LOCAL, the decoded MutableSetList SHALL replace the current MutableSetList, and guardOrigin SHALL be set to LOCAL.
+If guardOrigin is INHERITED, the effective MutableSetList SHALL be computed as the intersection of the decoded MutableSetList and the inherited MutableSetList from the parent execution frame, and guardOrigin SHALL remain INHERITED.
 
 #### Thực thi bất biến trên mã lệnh thay đổi trạng thái
 
-Trên khung thực thi hiện tại, nếu guardOrigin là LOCAL hoặc INHERITED thì các hành động sau đây PHẢI bị hoàn tác tương tự như khi gặp lỗi hết gas:
-
-Note : Thay bằng ngôn ngữ đặc tả cho mã giả này
-- Thực thi CALLCODE. 
-- Thực thi SELFDESTRUCT.
-- Thực thi CALL trong đó value > 0 và (lookup[address(this)][0x02].active == false hoặc lookup[targetAddress][0x02].active == false).
-- Thực thi CREATE hoặc CREATE2 với (lookup[computedTargetAddress][0x00].active == false) hoặc (lookup[address(this)][0x01] == false hoặc lookup[computedTargetAddress][0x01] == false) hoặc (value > 0 và (lookup[address(this)][0x02].active == false hoặc lookup[computedTargetAddress][0x02].active == false)).
-- Slot mục tiêu của SSTORE là lookup[address(this)][0x03].active == false và lookup[address(this)][0x03].allowedSlot[targetSlot] == false.
-- Slot mục tiêu của TSTORE là lookup[address(this)][0x04].active == false và lookup[address(this)][0x04].allowedSlot[targetSlot] == false.
-
-Lưu ý rằng các mã lệnh mới có tạo ra sự thay đổi trạng thái hoặc các loại trạng thái mới được thêm vào trong tương lai PHẢI điều chỉnh hành vi sao cho phù hợp với thông số kỹ thuật của mã lệnh này để tránh các vấn đề tương thích ngược.
+While executing an execution frame where guardOrigin is LOCAL or INHERITED, any instruction that attempts to mutate state outside the permitted scope defined by the effective MutableSetList SHALL result in an exceptional halt equivalent to an out-of-gas condition.
+The following operations SHALL always result in an exceptional halt when guardOrigin is not NONE:
+Execution of CALLCODE.
+Execution of SELFDESTRUCT.
+The following operations SHALL result in an exceptional halt unless explicitly permitted by the effective MutableSetList:
+CALL with a non-zero value, unless mutation of Balance is permitted for both the caller address and the target address.
+CREATE or CREATE2, unless mutation of Code and Nonce is permitted for the created address, and mutation of Nonce is permitted for the caller address. If a non-zero value is transferred, mutation of Balance MUST also be permitted for both addresses.
+SSTORE, unless mutation of Storage is permitted for the executing address and the target storage slot is explicitly allowed.
+TSTORE, unless mutation of TransientStorage is permitted for the executing address and the target transient storage slot is explicitly allowed.
+Any future opcode or protocol change that introduces new forms of state mutation MUST define its interaction with MUTABLE in a manner consistent with the enforcement rules defined herein.
 
 ### Các trường hợp ngoại lệ
 
 - Hết gas
 - Không đủ toán hạng trên ngăn xếp
-- Kích thước tự mô tả của từng phần tử RLP trên bộ nhớ vượt quá giá trị `length` đã cho.
+- Any attempt to decode RLP data that would require reading beyond length bytes SHALL result in an exceptional halt.
 - Dữ liệu RLP payload cho MutableSetList không khớp với cấu trúc đã được định nghĩa.
 
 ### Chi phí gas
