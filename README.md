@@ -217,7 +217,7 @@ When an execution frame spawns a child frame via `CALL`, `DELEGATECALL`, `CALLCO
 - If `guardOrigin` is `NONE`, the child frame SHALL receive `guardOrigin = NONE`.
 - If `guardOrigin` is `LOCAL` or `INHERITED`, the child frame SHALL receive `guardOrigin = INHERITED`.
 
-#### Execution of the MUTABLE opcode
+#### Execution of the `MUTABLE` opcode
 
 When executing the `MUTABLE` opcode, the EVM SHALL decode the RLP-encoded `MutableSetList` from memory starting at `offset`, reading at most `length` bytes.
 If `isGuard` is set to `false`, the EVM SHALL set `guardOrigin` to `NONE` **only if** the current value of `guardOrigin` is `NONE` or `LOCAL`. If `guardOrigin` is `INHERITED`, this operation SHALL have no effect.
@@ -262,6 +262,30 @@ The gas cost of the `MUTABLE` opcode consists of:
    
 ## Lý do
 
-### `STATICCALL` Clarification
+### Ý tưởng thiết kế
 
-`STATICCALL` does not perform state mutation and is therefore not subject to `MUTABLE` enforcement.
+Ý tưởng ban đầu dựa trên việc tìm kiếm một giải pháp an toàn và minh bạch cho việc sử dụng các hợp đồng thông minh module, hướng đến việc cho phép các module được tích hợp một cách tự do nhưng vẫn đảm bảo an toàn cho hợp đồng gốc. Dựa trên ý tưởng đó chúng tôi đã xây dựng `InvariantGuard`, một hợp đồng cung cấp các modifier mạnh mẽ và linh hoạt cho phép tích hợp vào hợp đồng gốc để bảo vệ an toàn trạng thái với nhiều lựa chọn khác nhau. Tuy nhiên chúng tôi đã nhanh chóng nhận ra hạn chế của thiết kế này và các mẫu hợp đồng tương tự khi chúng không thể bảo vệ được những vị trí không được chỉ định. Những vị trí này có số lượng lớn đến mức khiến việc toàn bộ là bất khả thi với lượng gas hiện tại. Do vậy để đạt được hiệu ứng bao phủ toàn diện cần phải có sự hỗ trợ từ cấp độ giao thức.
+
+### Không có lệnh cấm trong `STATICCALL`
+
+Vì `MUTABLE` chỉ thiết lập môi trường và không tạo ra thêm trạng thái mới nên không có lý do chính đáng nào để cấm trong khung thực thi `static`.
+
+### Không có chỉ dẫn chi tiết cho `CALLCODE` và `SELFDESTRUCT`
+
+Cả hai mã lệnh này đều được xem là đã lỗi thời do vậy chúng chỉ được cung cấp mức kiểm tra tối thiểu để đảm bảo không có bất kỳ cửa hậu nào khi sử dụng `MUTABLE`.
+
+### `Option` có thể được mở rộng
+
+Đây là mục tiêu thiết kế của mẫu `MutableSetList` nhằm tạo thuận lợi cho việc nâng cấp mà không làm hỏng các hợp đồng sử dụng mã lệnh `MUTABLE` trước đó và không tăng thêm đáng kể chi phí sử dụng về phía người dùng cuối.
+
+### Tham số `length` chỉ định kích thước tối đa
+
+Do RLP có khả năng tự mô tả, việc thêm một tham số như `length` chỉ có một mục đích duy nhất là giúp máy khách nhanh chóng xác định kích thước tối đa của dữ liệu khi thực hiện giải mã `MutableSetList`.
+
+### Cho phép ghi đè Option
+
+Điều này giúp `MUTABLE` giữ được tính linh hoạt và tránh tạo ra các lỗi không mong muốn khác khi có các thay đổi nhỏ trong thực thi.
+
+### Thêm chi phí phân tích cho `MUTABLE`
+
+Chi phí này giúp hỗ trợ máy khách phân tích RLP và quản lý các thiết lập bất biến trong suốt quá trình thực thi. Chi phí này tương đương với chi phí phân tích `JUMPDEST` trên `init_code` khi tạo hợp đồng.
