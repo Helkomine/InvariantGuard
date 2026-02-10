@@ -286,6 +286,16 @@ Do RLP có khả năng tự mô tả, việc thêm một tham số như `length`
 
 Điều này giúp `MUTABLE` giữ được tính linh hoạt và tránh tạo ra các lỗi không mong muốn khác khi có các thay đổi nhỏ trong thực thi.
 
+### Không có giới hạn ngưỡng
+
+Việc thiết lập giới hạn ngưỡng tại các vị trí không được cho phép không mang lại lợi ích rõ ràng nào, trong khi đó tại những vị trí được cho phép vốn đã có khả năng lập trình giới hạn tốt nhờ các mẫu hợp đồng như `InvariantGuard`.
+
 ### Thêm chi phí phân tích cho `MUTABLE`
 
 Chi phí này giúp hỗ trợ máy khách phân tích RLP và quản lý các thiết lập bất biến trong suốt quá trình thực thi. Chi phí này tương đương với chi phí phân tích `JUMPDEST` trên `init_code` khi tạo hợp đồng.
+
+## Các vấn đề tương thích ngược
+
+### Thay đổi hành vi các mã lệnh
+
+Các mã lệnh liên quan đến trạng thái sẽ được điều chỉnh bởi mã lệnh `MUTABLE`, tác động mà nó gây ra tương tự vơi việc thực thi các mã lệnh này trong bối cảnh `STATICCALL`. Mặt khác tác động của mã lệnh này mang tính cục bộ khi nó chỉ hoạt động
