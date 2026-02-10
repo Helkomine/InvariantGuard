@@ -132,7 +132,7 @@ Tính đến thời điểm hiện tại, đã có ít nhất một giải pháp
 
 ### Constants
 
-`BASE_OPCODE_COST` : 3
+`BASE_OPCODE_COST` : `3`
 
 ### Opcode
 
@@ -165,6 +165,7 @@ The `MUTABLE` opcode interprets RLP-encoded data located in the caller’s memor
 `AllowedTransientStorage`: `bytes32`
 
 #### Option values
+
 `Option` is a `uint8` value with the following meanings:
 `0x00`: Code
 `0x01`: Nonce
@@ -210,10 +211,9 @@ At the start of transaction execution, `guardOrigin` SHALL be initialized to `NO
 
 #### Propagation of mutation restrictions 
 
-Nếu khung thực thi hiện tại chuyển tiếp giao dịch xuống khung thực thi con thông qua các mã lệnh `CALL`, `DELEGATECALL`, `CALLCODE`, `STATICCALL`, `CREATE` và `CREATE2`, hãy chuyển tiếp toàn bộ `MutableSetList` của khung thực thi hiện tại và guardOrigin xuống khung thực thi con theo quy tắc sau đây:
-
-- Nếu khung thực thi hiện tại đang có guardOrigin là NONE hãy chuyển tiếp guardOrigin là NONE xuống khung thực thi con.
-- Nếu khung thực thi hiện tại đang có guardOrigin là LOCAL hoặc INHERITED hãy chuyển tiếp guardOrigin là INHERITED xuống khung thực thi con.
+Nếu khung thực thi hiện tại chuyển When an execution frame spawns a child frame via `CALL`, `DELEGATECALL`, `CALLCODE`, `STATICCALL`, `CREATE`, or `CREATE2`, both guardOrigin and the effective MutableSetList SHALL be propagated as follows:
+If guardOrigin is NONE, the child frame SHALL receive guardOrigin = NONE.
+If guardOrigin is LOCAL or INHERITED, the child frame SHALL receive guardOrigin = INHERITED.
 
 #### Thực thi mã lệnh MUTABLE trong khung hiện tại
 
