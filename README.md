@@ -213,11 +213,11 @@ Nếu khung thực thi hiện tại chuyển tiếp giao dịch xuống khung th
 
 #### Thực thi mã lệnh MUTABLE trong khung hiện tại
 
-When executing the MUTABLE opcode, the EVM SHALL decode the RLP-encoded MutableSetList from memory starting at offset, reading at most length bytes.
-If isGuard is set to false, the EVM SHALL set guardOrigin to NONE only if the current value of guardOrigin is NONE or LOCAL. If guardOrigin is INHERITED, this operation SHALL have no effect.
-If isGuard is set to true:
-If guardOrigin is NONE or LOCAL, the decoded MutableSetList SHALL replace the current MutableSetList, and guardOrigin SHALL be set to LOCAL.
-If guardOrigin is INHERITED, the effective MutableSetList SHALL be computed as the intersection of the decoded MutableSetList and the inherited MutableSetList from the parent execution frame, and guardOrigin SHALL remain INHERITED.
+When executing the `MUTABLE` opcode, the EVM SHALL decode the RLP-encoded `MutableSetList` from memory starting at `offset`, reading at most `length` bytes.
+If `isGuard` is set to `false`, the EVM SHALL set `guardOrigin` to `NONE` only if the current value of `guardOrigin` is `NONE` or `LOCAL`. If `guardOrigin` is `INHERITED`, this operation SHALL have no effect.
+If `isGuard` is set to `true`:
+If `guardOrigin` is `NONE` or `LOCAL`, the decoded `MutableSetList` SHALL replace the current `MutableSetList`, and `guardOrigin` SHALL be set to `LOCAL`.
+If `guardOrigin` is `INHERITED`, the effective `MutableSetList` SHALL be computed as the intersection of the decoded `MutableSetList` and the inherited `MutableSetList` from the parent execution frame, and `guardOrigin` `SHALL` remain `INHERITED1.
 
 #### Thực thi bất biến trên mã lệnh thay đổi trạng thái
 
