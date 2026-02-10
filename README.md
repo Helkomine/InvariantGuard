@@ -159,7 +159,7 @@ Biến này dùng để quản lý việc kích hoạt các điều khoản hạ
 ```
 # Type aliases for RLP encoding
 Option = uint8   # Danh sách lựa chọn trạng thái
-Active = bool   # Cờ này cho biết loại trạng thái đã chọn được miễn trừ kiểm tra hay không
+Allowed = bool   # Indicates whether mutation of this state class is permitted
 Address = bytes20   # 20-byte Ethereum address
 AllowedStorage = bytes32   # Storage slot key
 AllowedTransientStorage = bytes32   # Transient Storage slot key
@@ -184,7 +184,7 @@ Payload = {
 # Tập hợp các thiết lập tương ứng dựa trên Option
 PolicyEntry = [
     Option,
-    Active,
+    Allowed,
     Payload
 ]
 
@@ -245,7 +245,8 @@ Lưu ý rằng các mã lệnh mới có tạo ra sự thay đổi trạng thái
 
 - Hết gas
 - Không đủ toán hạng trên ngăn xếp
-- Kích thước tự mô tả của từng phần tử RLP trên bộ nhớ vượt quá giá trị `length` đã cho. 
+- Kích thước tự mô tả của từng phần tử RLP trên bộ nhớ vượt quá giá trị `length` đã cho.
+- Dữ liệu RLP payload cho MutableSetList không khớp với cấu trúc đã được định nghĩa.
 
 ### Chi phí gas
 
