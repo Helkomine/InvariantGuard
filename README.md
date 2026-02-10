@@ -211,11 +211,11 @@ At the start of transaction execution, `guardOrigin` SHALL be initialized to `NO
 
 #### Propagation of mutation restrictions 
 
-Nếu khung thực thi hiện tại chuyển When an execution frame spawns a child frame via `CALL`, `DELEGATECALL`, `CALLCODE`, `STATICCALL`, `CREATE`, or `CREATE2`, both guardOrigin and the effective MutableSetList SHALL be propagated as follows:
-If guardOrigin is NONE, the child frame SHALL receive guardOrigin = NONE.
-If guardOrigin is LOCAL or INHERITED, the child frame SHALL receive guardOrigin = INHERITED.
+When an execution frame spawns a child frame via `CALL`, `DELEGATECALL`, `CALLCODE`, `STATICCALL`, `CREATE`, or `CREATE2`, both `guardOrigin` and the effective `MutableSetList` SHALL be propagated as follows:
+If `guardOrigin` is `NONE`, the child frame SHALL receive `guardOrigin = NONE`.
+If `guardOrigin` is `LOCAL` or `INHERITED`, the child frame SHALL receive `guardOrigin = INHERITED`.
 
-#### Thực thi mã lệnh MUTABLE trong khung hiện tại
+#### Execution of the MUTABLE opcode
 
 When executing the `MUTABLE` opcode, the EVM SHALL decode the RLP-encoded `MutableSetList` from memory starting at `offset`, reading at most `length` bytes.
 If `isGuard` is set to `false`, the EVM SHALL set `guardOrigin` to `NONE` only if the current value of `guardOrigin` is `NONE` or `LOCAL`. If `guardOrigin` is `INHERITED`, this operation SHALL have no effect.
@@ -223,28 +223,38 @@ If `isGuard` is set to `true`:
 If `guardOrigin` is `NONE` or `LOCAL`, the decoded `MutableSetList` SHALL replace the current `MutableSetList`, and `guardOrigin` SHALL be set to `LOCAL`.
 If `guardOrigin` is `INHERITED`, the effective `MutableSetList` SHALL be computed as the intersection of the decoded `MutableSetList` and the inherited `MutableSetList` from the parent execution frame, and `guardOrigin` `SHALL` remain `INHERITED`.
 
-#### Thực thi bất biến trên mã lệnh thay đổi trạng thái
+#### Enforcement of mutation invariants
 
-While executing an execution frame where guardOrigin is LOCAL or INHERITED, any instruction that attempts to mutate state outside the permitted scope defined by the effective MutableSetList SHALL result in an exceptional halt equivalent to an out-of-gas condition.
-The following operations SHALL always result in an exceptional halt when guardOrigin is not NONE:
-Execution of CALLCODE.
-Execution of SELFDESTRUCT.
-The following operations SHALL result in an exceptional halt unless explicitly permitted by the effective MutableSetList:
-CALL with a non-zero value, unless mutation of Balance is permitted for both the caller address and the target address.
-CREATE or CREATE2, unless mutation of Code and Nonce is permitted for the created address, and mutation of Nonce is permitted for the caller address. If a non-zero value is transferred, mutation of Balance MUST also be permitted for both addresses.
-SSTORE, unless mutation of Storage is permitted for the executing address and the target storage slot is explicitly allowed.
-TSTORE, unless mutation of TransientStorage is permitted for the executing address and the target transient storage slot is explicitly allowed.
-Any future opcode or protocol change that introduces new forms of state mutation MUST define its interaction with MUTABLE in a manner consistent with the enforcement rules defined herein.
+While executing an execution frame where `guardOrigin` is `LOCAL` or `INHERITED`, any instruction that attempts to mutate state outside the permitted scope defined by the effective `MutableSetList` SHALL result in an exceptional halt equivalent to an out-of-gas condition.
+The following operations SHALL always result in an exceptional halt when `guardOrigin` is not `NONE`:
 
-### Các trường hợp ngoại lệ
+• Execution of `CALLCODE`.
+• Execution of `SELFDESTRUCT`.
 
-- Hết gas
-- Không đủ toán hạng trên ngăn xếp
-- Any attempt to decode RLP data that would require reading beyond length bytes SHALL result in an exceptional halt.
-- Dữ liệu RLP payload cho MutableSetList không khớp với cấu trúc đã được định nghĩa.
+The following operations SHALL result in an exceptional halt unless explicitly permitted by the effective `MutableSetList`:
 
-### Chi phí gas
+• `CALL` with a non-zero value, unless mutation of Balance is permitted for both the caller address and the target address.
+• `CREATE` or `CREATE2`, unless mutation of Code and Nonce is permitted for the created address, and mutation of Nonce is permitted for the caller address. If a non-zero value is transferred, mutation of Balance MUST also be permitted for both addresses.
+• `SSTORE`, unless mutation of Storage is permitted for the executing address and the target storage slot is explicitly allowed.
+• `TSTORE`, unless mutation of TransientStorage is permitted for the executing address and the target transient storage slot is explicitly allowed.
 
-Chi phí gas cho mã lệnh `MUTABLE` bao gồm phí cơ bản `BASE_OPCODE_COST`, ngoài ra còn có chi phí mở rộng bộ nhớ theo quy tắc tính phí EVM hiện hành và chi phí tính trên mỗi chunk (32-byte) tương ứng với `length` được chỉ định nhằm hỗ trợ phân tích rlp.
+Any future opcode or protocol change that introduces new forms of state mutation MUST define its interaction with `MUTABLE` in a manner consistent with the enforcement rules defined herein.
+
+### Exceptional conditions
+
+Execution of `MUTABLE` SHALL result in an exceptional halt if any of the following occur:
+
+• Out-of-gas.
+• Insufficient stack items.
+• Any attempt to decode RLP data that would require reading beyond length bytes.
+• The RLP payload does not conform to the MutableSetList structure defined in this specification.
+
+### Gas cost
+
+The gas cost of the MUTABLE opcode consists of:
+
+• The base opcode cost `BASE_OPCODE_COST`.
+• Memory expansion costs, calculated according to existing EVM rules.
+• A per-chunk (32-byte) cost proportional to length, to account for RLP decoding overhead.
    
 ## Lý do
