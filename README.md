@@ -306,4 +306,4 @@ Các mã lệnh liên quan đến trạng thái sẽ được điều chỉnh b�
 
 ### Cải thiện trình biên dịch
 
-Các trình biên dịch cần tạo thuận lợi tốt nhất cho các lập trình viên trong việc truy cập vào trạng thái thông qua mã cấp cao. Trình biên dịch Solidity hiện tại vẫn chưa cho phép 
+Các trình biên dịch cần tạo thuận lợi tốt nhất cho các lập trình viên trong việc truy cập vào trạng thái thông qua mã cấp cao. Trình biên dịch Solidity hiện tại vẫn chưa cho phép sử dụng các 
