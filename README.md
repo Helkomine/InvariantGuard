@@ -140,17 +140,17 @@ Tính đến thời điểm hiện tại, đã có ít nhất một giải pháp
 
 #### Stack input:
 
-`offset`: Memory offset at which the RLP-encoded data begins.
-`length`: Maximum number of bytes that may be read from memory.
-`isGuard`: Boolean flag indicating whether the guard mechanism is enabled.
+- `offset`: Memory offset at which the RLP-encoded data begins.
+- `length`: Maximum number of bytes that may be read from memory.
+- `isGuard`: Boolean flag indicating whether the guard mechanism is enabled.
 
 #### `guardOrigin`
 
 The `guardOrigin` variable tracks the origin and propagation of mutation restrictions throughout execution frames within a transaction. It SHALL take one of the following values:
 
-• `NONE`: No mutation restrictions are active.
-• `LOCAL`: Mutation restrictions are active and were established in the current execution frame.
-• `INHERITED`: Mutation restrictions are active and were inherited from a parent execution frame.
+- `NONE`: No mutation restrictions are active.
+- `LOCAL`: Mutation restrictions are active and were established in the current execution frame.
+- `INHERITED`: Mutation restrictions are active and were inherited from a parent execution frame.
 
 ### RLP Data Structures
 
@@ -158,11 +158,11 @@ The `MUTABLE` opcode interprets RLP-encoded data located in the caller’s memor
 
 #### Type aliases
 
-`Option`: `uint8`
-`Allowed`: `bool`
-`Address`: `bytes20`
-`AllowedStorage`: `bytes32`
-`AllowedTransientStorage`: `bytes32`
+- `Option`: `uint8`
+- `Allowed`: `bool`
+- `Address`: `bytes20`
+- `AllowedStorage`: `bytes32`
+- `AllowedTransientStorage`: `bytes32`
 
 #### Option values
 
