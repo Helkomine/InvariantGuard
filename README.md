@@ -125,7 +125,7 @@ This EIP introduces a new opcode, MUTABLE, which restricts state changes to an e
 ## Motivation
 
 Unintended state mutation during execution is a persistent security risk in smart contract systems. This risk is especially pronounced in proxy-based architectures that rely on `DELEGATECALL`, where the calling contract effectively relinquishes control over which state changes may occur in the callee’s execution context.
-At the protocol level, there is currently no mechanism to stabilize or constrain state layout during execution. Introducing such a mechanism enables safer composition of contracts, supports future extensibility, and improves overall robustness for an increasingly dynamic Layer 1 ecosystem.
+At the protocol level, there is currently no mechanism to stabilize or constrain state layout during execution. Introducing such a mechanism enables safer composition of contracts, supports future extensibility, and improves overall robustness for an increasingly dynamic Layer 1 ecosystem.  
 At present, there exist contract-level approaches for constraining state mutation, which we refer to as an inner guard. These mechanisms offer strong and programmable protection for explicitly declared locations but fundamentally cannot defend against mutations outside the specified set. Because the number of potentially mutable locations is unbounded, attempting full coverage at the contract level is infeasible under current gas constraints.
 To achieve comprehensive protection, a complementary outer guard is required. This can only be implemented at the protocol level. By combining an inner guard with the proposed outer guard, contracts can form a robust firewall against unintended or malicious side effects arising from external calls. 
 
