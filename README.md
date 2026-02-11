@@ -60,17 +60,44 @@ This design is conceptually similar to the pattern used in flash loan validation
 
 ### Invariant Classification
 
-Trong thiết kế của InvariantGuard, bất biến được mở rộng theo cả hai chiều:
+In the design of `InvariantGuard`, invariants are extended along two dimensions:
 
-- Các loại trạng thái : Bao gồm `Code`, `Nonce`, `Balance`, `Storage` và `Transient Storage`.
-- Ngưỡng giới hạn : Cung cấp các cấu hình giá trị bao gồm EXACT (chính xác tuyệt đối), INCREASE_EXACT (tăng đúng), INCREASE_MAX (tăng tối đa), INCREASE_MIN (tăng tối thiểu), DECREASE_EXACT (giảm đúng), DECREASE_MAX (giảm tối đa), DECREASE_MIN (giảm tối thiểu).
+**1. State Categories**
+The following state types are supported:
 
-Tất cả các loại bất biến đều được thể hiện dưới dạng một modifier với tên được ghép giữa ngưỡng giới hạn + các loại trạng thái. Có một trường hợp đặc biệt bất biến dựa trên kỳ vọng (có tiền tố assert) trong đó một giá trị kỳ vọng phải được cung cấp bởi hợp đồng khách thay vì được đọc trực tiếp từ trạng thái, tuy nhiên nó vẫn được xếp vào loại EXACT.
-Các cấu hình mới sẽ được nghiên cứu và thêm vào trong tương lai.
+- **Code**
+- **Nonce**
+- **Balance**
+- **Storage**
+- **Transient Storage**
 
-### Tích hợp vào hợp đồng khách
+**2. Threshold Configurations**
 
-Thêm vào file `.sol` hiện tại của bạn như sau:
+Each state category can be configured with a threshold policy:
+
+- **EXACT** – Value must remain exactly unchanged
+- **INCREASE_EXACT** – Must increase by an exact amount
+- **INCREASE_MAX** – May increase up to a maximum bound
+- **INCREASE_MIN** – Must increase by at least a minimum bound
+- **DECREASE_EXACT** – Must decrease by an exact amount
+- **DECREASE_MAX** – May decrease up to a maximum bound
+- **DECREASE_MIN** – Must decrease by at least a minimum bound
+- 
+Each invariant is exposed as a Solidity modifier whose name is composed of:
+
+```
+<Threshold> + <StateType>
+```
+
+Special Case: Expectation-Based Invariants
+There is a special class of invariants prefixed with assert.
+In this case, the expected value is provided explicitly by the calling contract rather than being read directly from the current state.
+Despite this difference in value sourcing, these invariants are still classified under the **EXACT** category.
+Additional configurations may be researched and introduced in future versions.
+
+### Integration into Client Contracts
+
+To integrate InvariantGuard into your contract, import the appropriate module into your existing `.sol` file:
 
 - `InvariantGuardInternal`:
 
