@@ -62,7 +62,8 @@ This design is conceptually similar to the pattern used in flash loan validation
 
 In the design of `InvariantGuard`, invariants are extended along two dimensions:
 
-**1. State Categories**
+#### 1. State Categories
+
 The following state types are supported:
 
 - **Code**
@@ -71,7 +72,7 @@ The following state types are supported:
 - **Storage**
 - **Transient Storage**
 
-**2. Threshold Configurations**
+#### 2. Threshold Configurations
 
 Each state category can be configured with a threshold policy:
 
@@ -89,7 +90,8 @@ Each invariant is exposed as a Solidity modifier whose name is composed of:
 <Threshold> + <StateType>
 ```
 
-**Special Case: Expectation-Based Invariants** 
+#### Special Case: Expectation-Based Invariants 
+
 There is a special class of invariants prefixed with `assert`.
 In this case, the expected value is provided explicitly by the calling contract rather than being read directly from the current state.
 Despite this difference in value sourcing, these invariants are still classified under the **EXACT** category. 
