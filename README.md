@@ -89,7 +89,7 @@ Each invariant is exposed as a Solidity modifier whose name is composed of:
 <Threshold> + <StateType>
 ```
 
-**Special Case: Expectation-Based Invariants**
+**Special Case: Expectation-Based Invariants** 
 There is a special class of invariants prefixed with `assert`.
 In this case, the expected value is provided explicitly by the calling contract rather than being read directly from the current state.
 Despite this difference in value sourcing, these invariants are still classified under the **EXACT** category. 
@@ -165,8 +165,10 @@ For this reason, the author strongly recommends using Invariant-Guard only for c
 
 ### Difference from ReentrancyGuard
 
-At first glance, the execution logic of InvariantGuard may resemble OpenZeppelin’s `ReentrancyGuard`. However, their execution models are fundamentally different.
-Execution Flow Comparison
+At first glance, the execution logic of `InvariantGuard` may resemble OpenZeppelin’s `ReentrancyGuard`. However, their execution models are fundamentally different.
+
+#### Execution Flow Comparison
+
 `ReentrancyGuard` follows the pattern:
 
 ```
@@ -181,22 +183,31 @@ Read → Execute → Read → Check
 
 The only common element is that the protected execution occurs in the middle.
 All other aspects differ.
-State Impact and Cost Model
-`ReentrancyGuard`
-Introduces new state (older versions use storage).
-Newer versions rely on transient storage, but still introduce local state mutation.
-Has higher operational cost.
-Is restricted in static execution contexts.
-`InvariantGuard`
-Only reads state before and after execution.
-Does not introduce new state.
-The primary cost comes from state access.
-Has lower operational overhead.
-Is not restricted under static execution contexts.
-Functional Purpose
+
+#### State Impact and Cost Model
+
+`ReentrancyGuard`:
+
+- Introduces new state (older versions use storage).
+- Newer versions rely on transient storage, but still introduce local state mutation.
+- Has higher operational cost.
+- Is restricted in `static` execution contexts.
+
+`InvariantGuard`:
+
+- Only reads state before and after execution.
+- Does not introduce new state.
+- The primary cost comes from state access.
+- Has lower operational overhead.
+- Is not restricted under static execution contexts.
+
+#### Functional Purpose
+
 Most importantly:
-ReentrancyGuard prevents reentrancy attacks.
-InvariantGuard prevents unintended invariant violations.
+
+- `ReentrancyGuard` prevents reentrancy attacks.
+- `InvariantGuard` prevents unintended invariant violations.
+- 
 These are distinct security concerns. Developers must clearly understand their differences to avoid misuse.
 Combining both mechanisms is possible but should be done carefully, as their interaction may introduce unintended execution behavior.
 
