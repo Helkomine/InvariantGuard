@@ -8,9 +8,9 @@ A framework to make `DELEGATECALL` safer.
 
 `DELEGATECALL` was introduced very early in Ethereum [EIP-7](https://eips.ethereum.org/EIPS/eip-7) as a safer successor to `CALLCODE`.
 It is a particularly powerful opcode: it allows a contract to load and execute code from a target address in the caller’s context. This implies that delegated code can freely modify the caller’s storage, something that plain `CALL` cannot fully replace.
-In addition, `DELEGATECALL` preserves both msg.sender and msg.value, which makes it extremely useful for composability and immediate reasoning in delegated execution contexts.
+In addition, `DELEGATECALL` preserves both `msg.sender` and `msg.value`, which makes it extremely useful for composability and immediate reasoning in delegated execution contexts.
 
-However, despite its importance, the protocol has not introduced major improvements around this opcode since its inception. This does not mean that no issues exist. In practice, using DELEGATECALL imposes a significant additional burden on developers, especially regarding storage safety and layout management. Any inconsistency in layout assumptions or execution entry points can lead to catastrophic consequences.
+However, despite its importance, the protocol has not introduced major improvements around this opcode since its inception. This does not mean that no issues exist. In practice, using DELEGATECALL imposes a significant additional burden on developers, especially regarding storage safety and layout management. Any inconsistency in layout assumptions can lead to catastrophic consequences.
 
 ### Existing Mitigations and Their Limitations
 
