@@ -10,20 +10,20 @@ A framework to make `DELEGATECALL` safer.
 It is a particularly powerful opcode: it allows a contract to load and execute code from a target address in the caller’s context. This implies that delegated code can freely modify the caller’s storage, something that plain `CALL` cannot fully replace.
 In addition, `DELEGATECALL` preserves both `msg.sender` and `msg.value`, which makes it extremely useful for composability and immediate reasoning in delegated execution contexts.
 
-However, despite its importance, the protocol has not introduced major improvements around this opcode since its inception. This does not mean that no issues exist. In practice, using DELEGATECALL imposes a significant additional burden on developers, especially regarding storage safety and layout management. Any inconsistency in layout assumptions can lead to catastrophic consequences.
+However, despite its importance, the protocol has not introduced major improvements around this opcode since its inception. This does not mean that no issues exist. In practice, using `DELEGATECALL` imposes a significant additional burden on developers, especially regarding storage safety and layout management. Any inconsistency in layout assumptions can lead to catastrophic consequences.
 
 ### Existing Mitigations and Their Limitations
 
-There have been attempts to mitigate these risks. One notable example is the introduction of explicit storage namespaces (ERC-7201), which aims to reduce layout collisions.
+There have been attempts to mitigate these risks. One notable example is the introduction of explicit storage namespaces [ERC-7201](https://eips.ethereum.org/EIPS/eip-7201), which aims to reduce layout collisions.
 However, such solutions primarily address storage layout assumptions and rely on the proxy delegating to a well-behaved logic contract. This implicitly assumes that there exists at least one “valid” execution path. In reality, layouts can still be broken, for example by unintentionally activating malicious logic embedded in a backdoored contract.
 This problem becomes particularly severe in modular smart contract architectures, where users are allowed to install custom modules. Most users lack the expertise to thoroughly analyze the safety of these modules. Once installed, a malicious module can remain dormant and later be triggered by seemingly harmless transactions, ultimately allowing an attacker to seize full control of a wallet and cause irreversible damage.
-Some cautious teams have implemented pre- and post-execution value checks to reduce the impact of DELEGATECALL. While helpful, these patterns are not widely adopted, leaving most developers to repeatedly reinvent partial and fragile safety mechanisms. As a result, many deployed contracts remain fundamentally exposed: a single mistake during delegated execution can result in total loss of control.
+Some cautious teams have implemented pre- and post-execution value checks to reduce the impact of `DELEGATECALL`. While helpful, these patterns are not widely adopted, leaving most developers to repeatedly reinvent partial and fragile safety mechanisms. As a result, many deployed contracts remain fundamentally exposed: a single mistake during delegated execution can result in total loss of control.
 
 ## Motivation and Overview
 
-Based on these observations, the author originally introduced a complete implementation named Safe-Delegatecall, later renamed to Invariant-Guard to reflect a more ambitious goal:
+Based on these observations, the author originally introduced a complete implementation named `Safe-Delegatecall`, later renamed to `Invariant-Guard` to reflect a more ambitious goal:
 
-Not only controlling state changes caused by DELEGATECALL, but by any opcode or execution path that may alter critical invariants.
+Not only controlling state changes caused by `DELEGATECALL`, but by any opcode or execution path that may alter critical invariants.
 
 This repository presents the first public Solidity implementation of Invariant-Guard. Feedback from the community is highly appreciated.
 The author is also preparing an EIP proposal to provide protocol-level invariant protection, enabling global guarantees that cannot be fully achieved at the contract level alone.
@@ -32,19 +32,21 @@ The author is also preparing an EIP proposal to provide protocol-level invariant
 
 ## Usage Guide
 
-Invariant-Guard currently provides four variants:
-InvariantGuardInternal
-InvariantGuardExternal
-InvariantGuardERC20
-InvariantGuardERC721
+`Invariant-Guard` currently provides four variants:
+
+- `InvariantGuardInternal`
+- `InvariantGuardExternal`
+- `InvariantGuardERC20`
+- `InvariantGuardERC721`
 
 If you are only interested in usage examples or prefer to read the implementation directly, please familiarize yourself with the design principles below to avoid confusion.
 
 ### Available Files
 
-There are five Invariant-Guard files in total:
-Four functional implementations (listed above)
-One shared helper library: InvariantGuardHelper
+There are five `Invariant-Guard` files in total:
+
+- Four functional implementations (listed above)
+- One shared helper library: `InvariantGuardHelper`.
 
 ### Core Mechanism
 
